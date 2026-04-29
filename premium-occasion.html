@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Surprise | Premium Experience</title>
+    <!-- Social Sharing Meta Tags -->
+    <meta property="og:title" content="A Special Surprise for You ✦">
+    <meta property="og:description" content="Open this link to see a premium digital surprise crafted just for you.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1513151233558-d860c5398176?w=1200&q=80">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;1,6..96,400&family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff4d6d;
+            --secondary: #ffb3c1;
+            --dark: #1a1a1a;
+            --light: #fff5f6;
+            --gold: #d4af37;
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: var(--light);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- Custom Cursor --- */
+        #cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease;
+            display: none;
+        }
+        @media (min-width: 1024px) {
+            body { cursor: none; }
+            #cursor { display: block; }
+        }
+
+        /* --- Background Elements --- */
+        .bg-blobs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            filter: blur(80px);
+        }
+
+        .blob {
+            position: absolute;
+            background: var(--primary);
+            border-radius: 50%;
+            opacity: 0.2;
+            animation: float 20s infinite alternate;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(100px, 100px) scale(1.2); }
+        }
+
+        /* --- Loading Screen --- */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: var(--dark);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 1s ease;
+        }
+
+        .loader-heart {
+            font-size: 3rem;
+            animation: beat 1s infinite;
+            color: var(--primary);
+        }
+
+        @keyframes beat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* --- Sections --- */
+        section {
+            min-height: 100vh;
+            padding: 4rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* --- Hero --- */
+        .hero {
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-family: 'Bodoni Moda', serif;
+            font-size: clamp(3rem, 10vw, 7rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .hero p {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: var(--secondary);
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        /* --- Music Toggle --- */
+        .music-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            padding: 0.8rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .music-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary);
+        }
+
+        /* --- Photo Stack --- */
+        .photo-stack {
+            position: relative;
+            width: 300px;
+            height: 400px;
+            margin: 2rem auto;
+        }
+
+        .photo-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: white;
+            padding: 10px 10px 40px 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 2px;
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border: 1px solid #eee;
+        }
+
+        .photo-card .caption {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        /* --- Message Reveal --- */
+        .message-box {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(15px);
+            padding: 3rem 2rem;
+            border-radius: 20px;
+            max-width: 600px;
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: 1s;
+        }
+
+        .message-box.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .message-box h2 {
+            font-family: 'Bodoni Moda', serif;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        /* --- Countdown --- */
+        .countdown {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .count-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .count-num {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .count-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--secondary);
+        }
+
+        /* --- Footer --- */
+        footer {
+            padding: 4rem 2rem;
+            text-align: center;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .btn-qr {
+            margin-top: 2rem;
+            padding: 1rem 2rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-qr:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(255, 77, 109, 0.3);
+        }
+
+        /* --- Animations --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 1s ease-out;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .photo-stack {
+                width: 260px;
+                height: 340px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="loader-heart">❤</div>
+        <p>Preparing a surprise...</p>
+    </div>
+
+    <div id="cursor"></div>
+    <canvas id="confetti-canvas" style="position: fixed; inset: 0; pointer-events: none; z-index: 999;"></canvas>
+
+    <div class="bg-blobs" id="blobs"></div>
+
+    <div class="music-toggle" id="musicToggle">
+        <span id="musicIcon">🔇</span>
+    </div>
+
+    <audio id="bgMusic" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <h1 id="hero-title">Happy Birthday</h1>
+        <p id="hero-subtitle">To the one who makes every day brighter</p>
+        <div class="countdown" id="countdown">
+            <div class="count-item"><span class="count-num" id="days">00</span><span class="count-label">Days</span></div>
+            <div class="count-item"><span class="count-num" id="hours">00</span><span class="count-label">Hours</span></div>
+            <div class="count-item"><span class="count-num" id="mins">00</span><span class="count-label">Mins</span></div>
+            <div class="count-item"><span class="count-num" id="secs">00</span><span class="count-label">Secs</span></div>
+        </div>
+    </section>
+
+    <!-- MEMORIES SECTION -->
+    <section id="memories">
+        <div class="reveal">
+            <h2 style="font-family: 'Bodoni Moda'; font-size: 3rem; margin-bottom: 2rem; text-align: center;">Our Journey</h2>
+        </div>
+        <div class="photo-stack" id="photoStack">
+            <!-- Photos will be injected here -->
+        </div>
+        <p style="margin-top: 3rem; color: var(--secondary); font-style: italic;">Tap a photo to see the next one</p>
+    </section>
+
+    <!-- MESSAGE SECTION -->
+    <section>
+        <div class="message-box reveal" id="messageBox">
+            <h2>From My Heart</h2>
+            <p id="mainMessage">
+                "Life is not measured by the number of breaths we take, but by the moments that take our breath away. You are that moment for me, every single day."
+            </p>
+            <div style="margin-top: 2rem; color: var(--gold); font-family: 'Playfair Display';">
+                — With Love, <span id="senderName">Harry</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- FINAL SECTION -->
+    <section>
+        <div class="reveal" style="text-align: center;">
+            <h2 style="font-family: 'Bodoni Moda'; font-size: 4rem; color: var(--primary);">Forever & Always</h2>
+            <p style="font-size: 1.2rem; margin-top: 1rem;">Let's make many more memories together.</p>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2026 Crafted with Love</p>
+        <button class="btn-qr" id="shareBtn">Get Your Own Page</button>
+    </footer>
+
+    <script type="module">
+        // CONFIGURATION - Update these values for each customer
+        let config = {
+            title: "Happy Birthday, Jiya!",
+            subtitle: "Celebrating 24 years of brilliance",
+            targetDate: "2026-05-31T00:00:00", // The big day!
+            message: "You are the melody to my song, the light to my path, and the joy in my heart. Watching you achieve your dreams is my favorite thing to do. Cheers to 25!",
+            sender: "Rahul",
+            musicUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+            photos: [
+                { url: "https://images.unsplash.com/photo-1518893063132-36e46dbe2428?w=500", caption: "Where it all began..." },
+                { url: "https://images.unsplash.com/photo-1516589174184-c68526514800?w=500", caption: "That summer in Bali" },
+                { url: "https://images.unsplash.com/photo-1529636760656-e09213d095bc?w=500", caption: "Late night coffee talks" },
+                { url: "https://images.unsplash.com/photo-1531747110447-caecaa9b2781?w=500", caption: "Your smile is everything" },
+                { url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500", caption: "To infinity and beyond" }
+            ]
+        };
+
+        // Supabase Setup
+        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+        const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Initialize Page
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check for Dynamic ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const slugId = urlParams.get('id');
+
+            if (slugId) {
+                console.log('Fetching data for:', slugId);
+                const { data, error } = await supabaseClient
+                    .from('occasions')
+                    .select('*')
+                    .eq('slug', slugId)
+                    .single();
+
+                if (data && !error) {
+                    config = {
+                        title: data.title,
+                        subtitle: data.subtitle,
+                        targetDate: data.target_date,
+                        message: data.message,
+                        sender: data.sender_name,
+                        musicUrl: data.music_url || config.musicUrl,
+                        photos: data.photos
+                    };
+                } else {
+                    console.error('Error fetching occasion:', error);
+                }
+            }
+
+            // Apply Config
+            document.title = config.title;
+            document.getElementById('hero-title').innerText = config.title;
+            document.getElementById('hero-subtitle').innerText = config.subtitle;
+            document.getElementById('mainMessage').innerText = config.message;
+            document.getElementById('senderName').innerText = config.sender;
+
+            // Inject Blobs
+            const blobsContainer = document.getElementById('blobs');
+            for(let i=0; i<5; i++) {
+                const b = document.createElement('div');
+                b.className = 'blob';
+                b.style.width = Math.random() * 300 + 200 + 'px';
+                b.style.height = b.style.width;
+                b.style.left = Math.random() * 100 + '%';
+                b.style.top = Math.random() * 100 + '%';
+                b.style.animationDelay = Math.random() * 5 + 's';
+                blobsContainer.appendChild(b);
+            }
+
+            // Confetti Cannon
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            let pieces = [];
+            const numberOfPieces = 50;
+            const colors = ['#ff4d6d', '#ffb3c1', '#ff758f', '#d4af37', '#ffffff'];
+
+            function updateCanvasSize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', updateCanvasSize);
+            updateCanvasSize();
+
+            class Piece {
+                constructor() {
+                    this.reset();
+                }
+                reset() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height - canvas.height;
+                    this.rotation = Math.random() * 360;
+                    this.size = Math.random() * 10 + 5;
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                    this.speed = Math.random() * 3 + 2;
+                }
+                update() {
+                    this.y += this.speed;
+                    this.rotation += this.speed;
+                    if (this.y > canvas.height) this.reset();
+                }
+                draw() {
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation * Math.PI / 180);
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                    ctx.restore();
+                }
+            }
+
+            for (let i = 0; i < numberOfPieces; i++) pieces.push(new Piece());
+
+            function animateConfetti() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                pieces.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                requestAnimationFrame(animateConfetti);
+            }
+            animateConfetti();
+
+            // Photo Stack Logic
+            const stack = document.getElementById('photoStack');
+            config.photos.forEach((photo, index) => {
+                const card = document.createElement('div');
+                card.className = 'photo-card';
+                card.style.zIndex = config.photos.length - index;
+                card.style.transform = `rotate(${Math.random() * 10 - 5}deg) translate(${index * 2}px, ${index * 2}px)`;
+                card.innerHTML = `
+                    <img src="${photo.url}" alt="Memory">
+                    <div class="caption">${photo.caption}</div>
+                `;
+                
+                card.addEventListener('click', () => {
+                    card.style.transform = `translateX(400px) rotate(20deg) scale(0.5)`;
+                    card.style.opacity = '0';
+                    setTimeout(() => {
+                        stack.prepend(card);
+                        card.style.transform = `rotate(${Math.random() * 10 - 5}deg)`;
+                        card.style.opacity = '1';
+                        card.style.zIndex = 1;
+                        // update other z-indexes
+                        Array.from(stack.children).forEach((c, i) => {
+                            c.style.zIndex = stack.children.length - i;
+                        });
+                    }, 500);
+                });
+                stack.appendChild(card);
+            });
+
+            // Countdown Logic
+            function updateCountdown() {
+                const now = new Date().getTime();
+                const target = new Date(config.targetDate).getTime();
+                const diff = target - now;
+
+                if (diff < 0) {
+                    document.getElementById('countdown').innerHTML = "The Day is Here! 🎉";
+                    return;
+                }
+
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+                document.getElementById('days').innerText = d.toString().padStart(2, '0');
+                document.getElementById('hours').innerText = h.toString().padStart(2, '0');
+                document.getElementById('mins').innerText = m.toString().padStart(2, '0');
+                document.getElementById('secs').innerText = s.toString().padStart(2, '0');
+            }
+            setInterval(updateCountdown, 1000);
+            updateCountdown();
+
+            // Reveal Animation
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting) entry.target.classList.add('active');
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+            // Music Logic
+            const audio = document.getElementById('bgMusic');
+            const toggle = document.getElementById('musicToggle');
+            const icon = document.getElementById('musicIcon');
+            
+            toggle.addEventListener('click', () => {
+                if (audio.paused) {
+                    audio.play();
+                    icon.innerText = "🔊";
+                } else {
+                    audio.pause();
+                    icon.innerText = "🔇";
+                }
+            });
+
+            // Cursor Logic
+            const cursor = document.getElementById('cursor');
+            document.addEventListener('mousemove', (e) => {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+            });
+
+            // Loader
+            setTimeout(() => {
+                document.getElementById('loader').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loader').style.display = 'none';
+                    // Hero animations
+                    document.getElementById('hero-title').style.transition = '1s';
+                    document.getElementById('hero-title').style.opacity = '1';
+                    document.getElementById('hero-title').style.transform = 'translateY(0)';
+                    setTimeout(() => {
+                        document.getElementById('hero-subtitle').style.transition = '1s';
+                        document.getElementById('hero-subtitle').style.opacity = '1';
+                        document.getElementById('hero-subtitle').style.transform = 'translateY(0)';
+                    }, 300);
+                }, 1000);
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

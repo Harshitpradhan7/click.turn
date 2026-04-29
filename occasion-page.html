@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy Birthday, Ananya 🎂</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Playfair+Display:ital,wght@1,400;1,700&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --rose: #e8c4b8;
+      --deep: #1a0a0f;
+      --blush: #f5e6e0;
+      --gold: #c9a96e;
+      --wine: #6b1f35;
+      --cream: #faf5f0;
+      --text: #2d1520;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--deep);
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      position: fixed;
+      width: 12px;
+      height: 12px;
+      background: var(--gold);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s ease, width 0.3s, height 0.3s, opacity 0.3s;
+      mix-blend-mode: difference;
+    }
+
+    .cursor-ring {
+      position: fixed;
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(201, 169, 110, 0.5);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.15s ease, width 0.3s, height 0.3s;
+    }
+
+    /* Floating particles canvas */
+    #particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 70% at 50% 40%, rgba(107, 31, 53, 0.45) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 50% at 20% 80%, rgba(201, 169, 110, 0.15) 0%, transparent 60%);
+    }
+
+    .hero-date {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.4em;
+      color: var(--gold);
+      text-transform: uppercase;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.3s forwards;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-eyebrow {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: clamp(1.1rem, 3vw, 1.5rem);
+      color: var(--rose);
+      font-weight: 300;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.5s forwards;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(4rem, 14vw, 9rem);
+      font-weight: 300;
+      line-height: 0.9;
+      color: var(--cream);
+      letter-spacing: -0.02em;
+      opacity: 0;
+      animation: fadeUp 1s ease 0.7s forwards;
+    }
+
+    .hero-name span {
+      display: block;
+      font-style: italic;
+      background: linear-gradient(135deg, var(--gold) 0%, #e8c97a 50%, var(--gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-divider {
+      width: 1px;
+      height: 80px;
+      background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+      margin: 2rem auto;
+      opacity: 0;
+      animation: fadeIn 1s ease 1.2s forwards;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      color: var(--rose);
+      font-weight: 300;
+      letter-spacing: 0.05em;
+      max-width: 440px;
+      line-height: 1.7;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 1.4s forwards;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0;
+      animation: fadeIn 1s ease 2s forwards;
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    .scroll-hint::after {
+      content: '';
+      display: block;
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+
+    /* ── GALLERY ── */
+    .section {
+      position: relative;
+      z-index: 1;
+      padding: 6rem 1.5rem;
+    }
+
+    .section-label {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .section-label span {
+      font-size: 0.68rem;
+      letter-spacing: 0.45em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    .section-label h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 6vw, 3.8rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--cream);
+      margin-top: 0.4rem;
+    }
+
+    .gallery-grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: auto;
+      gap: 1rem;
+    }
+
+    .gallery-item {
+      position: relative;
+      overflow: hidden;
+      border-radius: 4px;
+      cursor: pointer;
+      background: var(--wine);
+    }
+
+    .gallery-item:nth-child(1) {
+      grid-column: span 2;
+      aspect-ratio: 16/9;
+    }
+
+    .gallery-item:nth-child(2) {
+      aspect-ratio: 3/4;
+    }
+
+    .gallery-item:nth-child(3) {
+      aspect-ratio: 3/4;
+    }
+
+    .gallery-item:nth-child(4) {
+      aspect-ratio: 3/4;
+    }
+
+    .gallery-item:nth-child(5) {
+      grid-column: span 2;
+      aspect-ratio: 16/9;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.4s;
+      filter: saturate(0.85) brightness(0.9);
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.06);
+      filter: saturate(1) brightness(1);
+    }
+
+    .gallery-item::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(26, 10, 15, 0.5) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .gallery-item:hover::after {
+      opacity: 1;
+    }
+
+    /* placeholder gallery items */
+    .gallery-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      color: rgba(232, 196, 184, 0.4);
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+    }
+
+    .gallery-placeholder svg {
+      width: 2.5rem;
+      height: 2.5rem;
+      opacity: 0.3;
+    }
+
+    /* ── MESSAGES ── */
+    .messages-section {
+      background: linear-gradient(to bottom, transparent, rgba(107, 31, 53, 0.1), transparent);
+    }
+
+    .messages-grid {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .message-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(201, 169, 110, 0.15);
+      border-radius: 6px;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.4s ease, border-color 0.4s;
+    }
+
+    .message-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(201, 169, 110, 0.35);
+    }
+
+    .message-card::before {
+      content: '"';
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 5rem;
+      line-height: 1;
+      color: var(--gold);
+      opacity: 0.12;
+      position: absolute;
+      top: -0.5rem;
+      left: 1rem;
+    }
+
+    .message-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      line-height: 1.8;
+      font-style: italic;
+      color: var(--blush);
+      margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .message-author {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .message-author-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--wine), var(--gold));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--cream);
+      flex-shrink: 0;
+    }
+
+    .message-author-name {
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+    }
+
+    .message-author-relation {
+      font-size: 0.7rem;
+      color: rgba(232, 196, 184, 0.5);
+      margin-top: 2px;
+    }
+
+    /* ── TIMELINE ── */
+    .timeline {
+      max-width: 600px;
+      margin: 0 auto;
+      position: relative;
+      padding-left: 2rem;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 3rem;
+      padding-left: 2rem;
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .timeline-item.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -2.35rem;
+      top: 0.3rem;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.2), 0 0 12px rgba(201, 169, 110, 0.4);
+    }
+
+    .timeline-year {
+      font-size: 0.68rem;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+
+    .timeline-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem;
+      font-style: italic;
+      color: var(--cream);
+      margin-bottom: 0.4rem;
+    }
+
+    .timeline-desc {
+      font-size: 0.85rem;
+      color: var(--rose);
+      line-height: 1.7;
+    }
+
+    /* ── CLOSING ── */
+    .closing {
+      min-height: 70vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .closing::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(107, 31, 53, 0.4) 0%, transparent 70%);
+    }
+
+    .closing-hearts {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      animation: heartBeat 2s ease-in-out infinite;
+      position: relative;
+      z-index: 1;
+    }
+
+    .closing-msg {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.5rem, 5vw, 2.8rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--cream);
+      max-width: 600px;
+      line-height: 1.4;
+      margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .closing-from {
+      font-size: 0.75rem;
+      letter-spacing: 0.4em;
+      color: var(--gold);
+      text-transform: uppercase;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* confetti canvas */
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* lightbox */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(10, 4, 7, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s;
+    }
+
+    .lightbox.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .lightbox img {
+      max-width: 90vw;
+      max-height: 85vh;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      color: var(--gold);
+      font-size: 1.5rem;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes scrollPulse {
+
+      0%,
+      100% {
+        transform: scaleY(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scaleY(0.6);
+        opacity: 0.4;
+      }
+    }
+
+    @keyframes heartBeat {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      20% {
+        transform: scale(1.15);
+      }
+
+      40% {
+        transform: scale(1);
+      }
+
+      60% {
+        transform: scale(1.1);
+      }
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-12px);
+      }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .gallery-item:nth-child(1) {
+        grid-column: span 2;
+        aspect-ratio: 4/3;
+      }
+
+      .gallery-item:nth-child(5) {
+        grid-column: span 2;
+        aspect-ratio: 4/3;
+      }
+    }
+
+    /* scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* age badge */
+    .age-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(201, 169, 110, 0.12);
+      border: 1px solid rgba(201, 169, 110, 0.3);
+      border-radius: 100px;
+      padding: 0.4rem 1.2rem;
+      margin-top: 1.5rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      text-transform: uppercase;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 1.8s forwards;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <canvas id="particles"></canvas>
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-date" id="heroDate">April 29, 2026</div>
+    <div class="hero-eyebrow">Wishing a very Happy Birthday to</div>
+    <h1 class="hero-name">
+      <span>Ananya</span>
+      Sharma
+    </h1>
+    <div class="age-badge">✦ Turning 25 ✦</div>
+    <div class="hero-divider"></div>
+    <p class="hero-subtitle">
+      Today we celebrate the most wonderful person — your laughter, your light, and every beautiful moment you bring
+      into our lives.
+    </p>
+    <div class="scroll-hint">Scroll to explore</div>
+  </section>
+
+  <!-- GALLERY -->
+  <section class="section">
+    <div class="section-label reveal">
+      <span>✦ Memories ✦</span>
+      <h2>Our Favourite Moments</h2>
+    </div>
+    <div class="gallery-grid reveal">
+
+      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=900&q=80">
+        <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=900&q=80" alt="Memory 1"
+          loading="lazy" />
+      </div>
+
+      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=600&q=80">
+        <img src="https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=600&q=80" alt="Memory 2"
+          loading="lazy" />
+      </div>
+
+      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1612540139150-4b5e29e83a5b?w=600&q=80">
+        <img src="https://images.unsplash.com/photo-1612540139150-4b5e29e83a5b?w=600&q=80" alt="Memory 3"
+          loading="lazy" />
+      </div>
+
+      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1513151233558-d860c5398176?w=600&q=80">
+        <img src="https://images.unsplash.com/photo-1513151233558-d860c5398176?w=600&q=80" alt="Memory 4"
+          loading="lazy" />
+      </div>
+
+      <div class="gallery-item" data-src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80">
+        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80" alt="Memory 5" loading="lazy" />
+      </div>
+
+    </div>
+  </section>
+
+  <!-- MESSAGES -->
+  <section class="section messages-section">
+    <div class="section-label reveal">
+      <span>✦ Wishes ✦</span>
+      <h2>Words From the Heart</h2>
+    </div>
+    <div class="messages-grid">
+
+      <div class="message-card reveal">
+        <p class="message-text">
+          Watching you grow into the brilliant, kind, and fearless woman you are today has been the greatest privilege.
+          Happy birthday, my love. The world is yours.
+        </p>
+        <div class="message-author">
+          <div class="message-author-avatar">M</div>
+          <div>
+            <div class="message-author-name">Mom</div>
+            <div class="message-author-relation">Mother</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="message-card reveal" style="transition-delay: 0.1s">
+        <p class="message-text">
+          25 years of you being the most annoying but also the most amazing person in my life. Here's to many more
+          adventures together. Love you, always.
+        </p>
+        <div class="message-author">
+          <div class="message-author-avatar">R</div>
+          <div>
+            <div class="message-author-name">Rohan</div>
+            <div class="message-author-relation">Best Friend</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="message-card reveal" style="transition-delay: 0.2s">
+        <p class="message-text">
+          From coffee breaks to late night chaos — every moment with you is a memory I treasure. Wishing you nothing but
+          joy today and always. 🎂
+        </p>
+        <div class="message-author">
+          <div class="message-author-avatar">P</div>
+          <div>
+            <div class="message-author-name">Priya</div>
+            <div class="message-author-relation">College Friend</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="message-card reveal" style="transition-delay: 0.15s">
+        <p class="message-text">
+          You inspire everyone around you with your energy and warmth. Proud to know you. Have a spectacular birthday —
+          you deserve every bit of happiness.
+        </p>
+        <div class="message-author">
+          <div class="message-author-avatar">V</div>
+          <div>
+            <div class="message-author-name">Vikram</div>
+            <div class="message-author-relation">Colleague</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section class="section">
+    <div class="section-label reveal">
+      <span>✦ Journey ✦</span>
+      <h2>25 Beautiful Years</h2>
+    </div>
+    <div class="timeline">
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2001</div>
+        <div class="timeline-title">The Beginning</div>
+        <div class="timeline-desc">The world became a brighter place on this day. Welcome to the world, Ananya.</div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2007</div>
+        <div class="timeline-title">First Day of School</div>
+        <div class="timeline-desc">That tiny backpack, those bright eyes full of wonder — ready to take on the world.
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2019</div>
+        <div class="timeline-title">Graduation</div>
+        <div class="timeline-desc">Years of hard work paid off. Top of the class, heart full of dreams.</div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2022</div>
+        <div class="timeline-title">New City, New Chapter</div>
+        <div class="timeline-desc">Mumbai called and you answered — brave, bold, and beautifully unstoppable.</div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-year">2026</div>
+        <div class="timeline-title">The Fabulous 25</div>
+        <div class="timeline-desc">A quarter century of you. Your best chapter is just beginning.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CLOSING -->
+  <section class="closing">
+    <div class="closing-hearts">🌹</div>
+    <div class="closing-msg">
+      "May this birthday be the beginning of a year full of laughter, love, and everything your heart desires."
+    </div>
+    <div class="closing-from">With all our love ✦ Your People</div>
+  </section>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">✕ Close</button>
+    <img src="" alt="Gallery image" id="lightboxImg" />
+  </div>
+
+  <script>
+    // ── Cursor ──
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    document.addEventListener('mousemove', e => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top = e.clientY + 'px';
+      setTimeout(() => {
+        ring.style.left = e.clientX + 'px';
+        ring.style.top = e.clientY + 'px';
+      }, 80);
+    });
+
+    // ── Particles ──
+    (function () {
+      const canvas = document.getElementById('particles');
+      const ctx = canvas.getContext('2d');
+      let W, H, particles = [];
+
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      const COLORS = ['rgba(201,169,110,', 'rgba(232,196,184,', 'rgba(245,230,224,'];
+
+      function createParticle() {
+        return {
+          x: Math.random() * W,
+          y: Math.random() * H,
+          r: Math.random() * 1.5 + 0.3,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: -Math.random() * 0.4 - 0.1,
+          color: COLORS[Math.floor(Math.random() * COLORS.length)],
+          alpha: Math.random() * 0.5 + 0.1,
+        };
+      }
+
+      for (let i = 0; i < 90; i++) particles.push(createParticle());
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        particles.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = p.color + p.alpha + ')';
+          ctx.fill();
+          p.x += p.vx; p.y += p.vy;
+          if (p.y < -5) { p.y = H + 5; p.x = Math.random() * W; }
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    // ── Confetti on load ──
+    (function () {
+      const canvas = document.getElementById('confetti-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const pieces = [];
+      const colors = ['#c9a96e', '#e8c4b8', '#f5e6e0', '#6b1f35', '#e8c97a', '#fff'];
+
+      for (let i = 0; i < 120; i++) {
+        pieces.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * -canvas.height,
+          r: Math.random() * 6 + 3,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: (Math.random() - 0.5) * 3,
+          vy: Math.random() * 3 + 1.5,
+          rot: Math.random() * 360,
+          vr: (Math.random() - 0.5) * 4,
+          shape: Math.random() > 0.5 ? 'rect' : 'circle',
+          opacity: 1,
+        });
+      }
+
+      let frame = 0;
+      function animate() {
+        if (frame > 240) { canvas.style.display = 'none'; return; }
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach(p => {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, 1 - frame / 220);
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot * Math.PI / 180);
+          ctx.fillStyle = p.color;
+          if (p.shape === 'rect') ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r);
+          else { ctx.beginPath(); ctx.arc(0, 0, p.r / 2, 0, Math.PI * 2); ctx.fill(); }
+          ctx.restore();
+          p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        });
+        frame++;
+        requestAnimationFrame(animate);
+      }
+      setTimeout(animate, 1200);
+    })();
+
+    // ── Scroll reveal ──
+    const reveals = document.querySelectorAll('.reveal, .timeline-item');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.12 });
+    reveals.forEach(el => observer.observe(el));
+
+    // ── Lightbox ──
+    document.querySelectorAll('.gallery-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const src = item.dataset.src;
+        if (!src) return;
+        document.getElementById('lightboxImg').src = src;
+        document.getElementById('lightbox').classList.add('active');
+      });
+    });
+    document.getElementById('lightboxClose').addEventListener('click', () => {
+      document.getElementById('lightbox').classList.remove('active');
+    });
+    document.getElementById('lightbox').addEventListener('click', e => {
+      if (e.target === document.getElementById('lightbox'))
+        document.getElementById('lightbox').classList.remove('active');
+    });
+  </script>
+</body>
+
+</html>

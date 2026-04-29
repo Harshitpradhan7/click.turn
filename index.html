@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLICK.TURN | Premium Digital Surprises</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #ff4d6d;
+            --dark: #0f172a;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--dark);
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Background */
+        .ambient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 20% 30%, rgba(255, 77, 109, 0.15) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 70%, rgba(147, 51, 234, 0.1) 0%, transparent 40%);
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .hero-text {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            font-weight: 300;
+        }
+
+        /* Demo Card */
+        .demo-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .demo-preview {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(45deg, #1e293b, #334155);
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .demo-preview img {
+            width: 80%;
+            transform: rotate(-5deg);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border-radius: 8px;
+        }
+
+        .btn-demo {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background: white;
+            color: var(--dark);
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-demo:hover {
+            transform: scale(1.05);
+        }
+
+        /* Pricing */
+        .pricing-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .tier {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .tier:hover {
+            border-color: var(--accent);
+            background: rgba(255, 77, 109, 0.05);
+        }
+
+        .tier-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .tier-info p {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .price {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .btn-buy {
+            display: block;
+            width: 100%;
+            padding: 1.2rem;
+            background: var(--accent);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-top: 2rem;
+            box-shadow: 0 10px 25px rgba(255, 77, 109, 0.3);
+            transition: 0.3s;
+        }
+
+        .btn-buy:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 77, 109, 0.4);
+        }
+
+        /* FAQ/Footer */
+        footer {
+            margin-top: 4rem;
+            text-align: center;
+            padding-bottom: 2rem;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .social-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background: rgba(147, 51, 234, 0.2);
+            color: #c084fc;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo">CLICK<span>.TURN</span></div>
+            <p class="hero-text">Turn your memories into a premium digital experience.</p>
+        </header>
+
+        <div class="demo-card">
+            <div class="badge">Trending on Insta</div>
+            <div class="demo-preview">
+                <!-- Replace with an actual screenshot of the premium template -->
+                <div style="background: var(--accent); width: 120px; height: 180px; border-radius: 8px; transform: rotate(-10deg); position: absolute; left: 25%; z-index: 1; border: 4px solid white;"></div>
+                <div style="background: white; width: 120px; height: 180px; border-radius: 8px; transform: rotate(5deg); position: absolute; left: 45%; z-index: 2; display: flex; align-items: center; justify-content: center; color: #333; font-weight: 800; font-size: 0.6rem; padding: 10px; text-align: center;">HAPPY BIRTHDAY!</div>
+            </div>
+            <h2 style="margin-bottom: 1rem;">The "Memory Stack" Experience</h2>
+            <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem;">Interactive photo stacks, custom music, and high-end animations.</p>
+            <a href="premium-occasion.html" class="btn-demo">View Demo</a>
+        </div>
+
+        <h2 class="pricing-title">Choose Your Plan</h2>
+
+        <div class="tier">
+            <div class="tier-info">
+                <h3>Basic Surprise</h3>
+                <p>5 Photos • Custom Message • 1 Year Hosting</p>
+            </div>
+            <div class="price">₹199</div>
+        </div>
+
+        <div class="tier" style="border-color: var(--accent);">
+            <div class="tier-info">
+                <h3>Premium Forever ✦</h3>
+                <p>10 Photos • Music • Countdown • Lifetime</p>
+            </div>
+            <div class="price">₹299</div>
+        </div>
+
+        <a href="https://wa.me/YOUR_NUMBER" class="btn-buy">Get Started on WhatsApp</a>
+
+        <footer>
+            <div class="social-links">
+                <a href="#">Instagram</a>
+                <a href="#">WhatsApp</a>
+                <a href="#">Help Center</a>
+            </div>
+            <p style="font-size: 0.8rem; color: #64748b;">© 2026 CLICK.TURN Digital Studio</p>
+        </footer>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLICK.TURN | Create New Occasion</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff4d6d;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.8rem;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 77, 109, 0.4);
+        }
+
+        .photo-entry {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .status {
+            margin-top: 1rem;
+            text-align: center;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .success { background: rgba(34, 197, 94, 0.2); color: #4ade80; display: block; }
+        .error { background: rgba(239, 68, 68, 0.2); color: #f87171; display: block; }
+
+        .config-hint {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Create Premium Page</h1>
+        
+        <form id="occasionForm">
+            <div class="form-group">
+                <label for="slug">URL ID (Slug) - e.g. jiya-bday</label>
+                <input type="text" id="slug" placeholder="jiya-bday" required>
+            </div>
+
+            <div class="form-group">
+                <label for="title">Heading (Title)</label>
+                <input type="text" id="title" placeholder="Happy Birthday, Jiya!" required>
+            </div>
+
+            <div class="form-group">
+                <label for="subtitle">Sub-heading</label>
+                <input type="text" id="subtitle" placeholder="Celebrating 24 years of brilliance">
+            </div>
+
+            <div class="form-group">
+                <label for="targetDate">Event Date & Time</label>
+                <input type="datetime-local" id="targetDate" required>
+            </div>
+
+            <div class="form-group">
+                <label for="message">Your Message</label>
+                <textarea id="message" rows="4" placeholder="Type your heartfelt message here..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="sender">Sender Name</label>
+                <input type="text" id="sender" placeholder="Harry" required>
+            </div>
+
+            <div class="form-group" style="border-top: 1px solid #334155; padding-top: 1.5rem; margin-top: 2rem;">
+                <label for="adminKey" style="color: var(--primary);">Secret Admin Key</label>
+                <input type="password" id="adminKey" placeholder="Enter your secret key to save" required>
+                <p class="config-hint">This prevents others from using your creator page.</p>
+            </div>
+
+            <div class="form-group">
+                <label>Photos (URLs & Captions)</label>
+                <div id="photoList">
+                    <div class="photo-entry">
+                        <input type="text" class="p-url" placeholder="Image URL">
+                        <input type="text" class="p-caption" placeholder="Caption">
+                    </div>
+                </div>
+                <button type="button" onclick="addPhotoField()" style="margin-top: 0.5rem; background: none; border: 1px dashed #334155; color: #94a3b8; width: 100%; padding: 0.5rem; border-radius: 8px; cursor: pointer;">+ Add Photo</button>
+            </div>
+
+            <button type="submit" class="btn-submit">Generate Page & Save</button>
+        </form>
+
+        <div id="status" class="status"></div>
+
+        <div id="qrContainer" style="margin-top: 2rem; text-align: center; display: none; background: white; padding: 2rem; border-radius: 16px;">
+            <h3 style="color: #0f172a; margin-bottom: 1rem;">QR Code for Customer</h3>
+            <div id="qrcode" style="display: flex; justify-content: center; margin-bottom: 1rem;"></div>
+            <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 1rem;">Scan to preview or download the image below</p>
+            <button onclick="downloadQR()" style="background: #0f172a; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer;">Download QR Code</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script type="module">
+        // REPLACE WITH YOUR SUPABASE DETAILS
+        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+        const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        window.addPhotoField = function() {
+            const div = document.createElement('div');
+            div.className = 'photo-entry';
+            div.innerHTML = `
+                <input type="text" class="p-url" placeholder="Image URL">
+                <input type="text" class="p-caption" placeholder="Caption">
+            `;
+            document.getElementById('photoList').appendChild(div);
+        }
+
+        document.getElementById('occasionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const status = document.getElementById('status');
+            
+            // SECURITY CHECK
+            const enteredKey = document.getElementById('adminKey').value;
+            const secretKey = import.meta.env.VITE_ADMIN_KEY;
+
+            if (enteredKey !== secretKey) {
+                status.innerText = '❌ Incorrect Admin Key. Access Denied.';
+                status.className = 'status error';
+                return;
+            }
+
+            status.className = 'status';
+            status.innerText = 'Saving...';
+
+            const photos = [];
+            document.querySelectorAll('.photo-entry').forEach(entry => {
+                const url = entry.querySelector('.p-url').value;
+                const caption = entry.querySelector('.p-caption').value;
+                if(url) photos.push({ url, caption });
+            });
+
+            const data = {
+                slug: document.getElementById('slug').value,
+                title: document.getElementById('title').value,
+                subtitle: document.getElementById('subtitle').value,
+                target_date: document.getElementById('targetDate').value,
+                message: document.getElementById('message').value,
+                sender_name: document.getElementById('sender').value,
+                photos: photos
+            };
+
+            try {
+                const { error } = await supabaseClient
+                    .from('occasions')
+                    .insert([data]);
+
+                if (error) throw error;
+
+                const finalUrl = `${window.location.origin}/premium-occasion.html?id=${data.slug}`;
+                status.innerText = 'Successfully saved! Link: ' + finalUrl;
+                status.className = 'status success';
+
+                // Generate QR
+                generateQR(finalUrl);
+            } catch (err) {
+                console.error(err);
+                status.innerText = 'Error: ' + err.message;
+                status.className = 'status error';
+            }
+        });
+
+        function generateQR(url) {
+            const container = document.getElementById('qrContainer');
+            const qrDiv = document.getElementById('qrcode');
+            qrDiv.innerHTML = ''; // Clear previous
+            new QRCode(qrDiv, {
+                text: url,
+                width: 200,
+                height: 200,
+                colorDark: "#0f172a",
+                colorLight: "#ffffff",
+            });
+            container.style.display = 'block';
+        }
+
+        window.downloadQR = function() {
+            const img = document.querySelector('#qrcode img');
+            if (img) {
+                const link = document.createElement('a');
+                link.download = 'customer-qr.png';
+                link.href = img.src;
+                link.click();
+            }
+        }
+    </script>
+</body>
+</html>
