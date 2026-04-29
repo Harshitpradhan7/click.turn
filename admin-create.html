@@ -3,209 +3,405 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CLICK.TURN | Create New Occasion</title>
+    <title>CLICK.TURN | Creative Studio Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #ff4d6d;
-            --bg: #0f172a;
-            --card: #1e293b;
+            --secondary: #ffb3c1;
+            --accent: #9333ea;
+            --bg: #0b0f1a;
+            --card: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
             --text: #f8fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
             background-color: var(--bg);
             color: var(--text);
             font-family: 'Outfit', sans-serif;
-            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 2rem 1rem;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Background */
+        .ambient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 77, 109, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            animation: move 20s infinite alternate;
+        }
+
+        @keyframes move {
+            0% { transform: translate(-10%, -10%); }
+            100% { transform: translate(110%, 110%); }
         }
 
         .container {
-            max-width: 600px;
-            margin: 0 auto;
+            width: 100%;
+            max-width: 800px;
             background: var(--card);
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            padding: 3rem;
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        h1 {
+        header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+        }
+
+        header h1 span {
             color: var(--primary);
+        }
+
+        header p {
+            color: #94a3b8;
+            font-weight: 300;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
         }
 
         .form-group {
             margin-bottom: 1.5rem;
         }
 
+        .full-width {
+            grid-column: span 2;
+        }
+
         label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #94a3b8;
+            margin-bottom: 0.6rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        input, textarea, select {
+        input, textarea {
             width: 100%;
-            padding: 0.8rem;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
+            padding: 1rem 1.2rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 14px;
             color: white;
             font-size: 1rem;
+            transition: 0.3s;
+            font-family: inherit;
         }
 
-        input:focus {
+        input:focus, textarea:focus {
             outline: none;
             border-color: var(--primary);
+            background: rgba(15, 23, 42, 0.9);
+            box-shadow: 0 0 0 4px rgba(255, 77, 109, 0.1);
         }
 
-        .btn-submit {
-            width: 100%;
-            padding: 1rem;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 77, 109, 0.4);
+        .photo-section {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1.5rem;
+            border-radius: 20px;
+            border: 1px dashed var(--border);
+            margin-top: 1rem;
         }
 
         .photo-entry {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
+            grid-template-columns: 1.5fr 1fr 40px;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+            align-items: center;
+        }
+
+        .btn-add-photo {
+            width: 100%;
+            padding: 0.8rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: #94a3b8;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+            margin-top: 0.5rem;
+        }
+
+        .btn-add-photo:hover {
+            border-color: var(--secondary);
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-remove {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, var(--primary) 0%, #fb7185 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 2rem;
+            box-shadow: 0 10px 25px rgba(255, 77, 109, 0.3);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(255, 77, 109, 0.5);
         }
 
         .status {
-            margin-top: 1rem;
+            margin-top: 2rem;
+            padding: 1.2rem;
+            border-radius: 16px;
             text-align: center;
-            padding: 1rem;
-            border-radius: 8px;
+            font-weight: 600;
             display: none;
+            animation: fadeIn 0.5s ease;
         }
 
-        .success { background: rgba(34, 197, 94, 0.2); color: #4ade80; display: block; }
-        .error { background: rgba(239, 68, 68, 0.2); color: #f87171; display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        .config-hint {
-            font-size: 0.8rem;
-            color: #64748b;
-            margin-top: 0.5rem;
+        .success { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); display: block; }
+        .error { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); display: block; }
+
+        #qrContainer {
+            margin-top: 2.5rem;
+            background: white;
+            padding: 2.5rem;
+            border-radius: 28px;
+            text-align: center;
+            display: none;
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        #qrContainer h3 { color: #0f172a; margin-bottom: 1rem; font-weight: 800; }
+        #qrcode { display: flex; justify-content: center; margin-bottom: 1.5rem; }
+
+        .btn-download {
+            background: #0f172a;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-download:hover { transform: scale(1.05); }
+
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+            .container { padding: 1.5rem; border-radius: 24px; }
+            .photo-entry { grid-template-columns: 1fr; }
+            .btn-remove { width: 100%; height: auto; padding: 0.5rem; }
         }
     </style>
 </head>
 <body>
 
+    <div class="ambient">
+        <div class="blob" style="top: -10%; left: -10%;"></div>
+        <div class="blob" style="bottom: -10%; right: -10%; animation-delay: -5s; background: radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, transparent 70%);"></div>
+    </div>
+
     <div class="container">
-        <h1>Create Premium Page</h1>
+        <header>
+            <h1>CLICK<span>.TURN</span></h1>
+            <p>Premium Surprise Creator Portal</p>
+        </header>
         
         <form id="occasionForm">
-            <div class="form-group">
-                <label for="slug">URL ID (Slug) - e.g. jiya-bday</label>
-                <input type="text" id="slug" placeholder="jiya-bday" required>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="slug">URL Identifier</label>
+                    <input type="text" id="slug" placeholder="e.g. jiya-24" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="targetDate">Surprise Date</label>
+                    <input type="datetime-local" id="targetDate" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="title">Main Heading</label>
+                    <input type="text" id="title" placeholder="e.g. Happy Birthday, Jiya!" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="subtitle">Sub-heading</label>
+                    <input type="text" id="subtitle" placeholder="e.g. To the most amazing person...">
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="message">Heartfelt Message</label>
+                    <textarea id="message" rows="4" placeholder="Your long message goes here..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="sender">From (Your Name)</label>
+                    <input type="text" id="sender" placeholder="Your Name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="adminKey">Admin Key</label>
+                    <input type="password" id="adminKey" placeholder="••••••••" required>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="title">Heading (Title)</label>
-                <input type="text" id="title" placeholder="Happy Birthday, Jiya!" required>
-            </div>
-
-            <div class="form-group">
-                <label for="subtitle">Sub-heading</label>
-                <input type="text" id="subtitle" placeholder="Celebrating 24 years of brilliance">
-            </div>
-
-            <div class="form-group">
-                <label for="targetDate">Event Date & Time</label>
-                <input type="datetime-local" id="targetDate" required>
-            </div>
-
-            <div class="form-group">
-                <label for="message">Your Message</label>
-                <textarea id="message" rows="4" placeholder="Type your heartfelt message here..." required></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="sender">Sender Name</label>
-                <input type="text" id="sender" placeholder="Harry" required>
-            </div>
-
-            <div class="form-group" style="border-top: 1px solid #334155; padding-top: 1.5rem; margin-top: 2rem;">
-                <label for="adminKey" style="color: var(--primary);">Secret Admin Key</label>
-                <input type="password" id="adminKey" placeholder="Enter your secret key to save" required>
-                <p class="config-hint">This prevents others from using your creator page.</p>
-            </div>
-
-            <div class="form-group">
-                <label>Photos (URLs & Captions)</label>
+            <div class="photo-section">
+                <label>Photo Gallery (Max 10)</label>
                 <div id="photoList">
                     <div class="photo-entry">
-                        <input type="text" class="p-url" placeholder="Image URL">
+                        <input type="text" class="p-url" placeholder="Image URL" required>
                         <input type="text" class="p-caption" placeholder="Caption">
+                        <div></div>
                     </div>
                 </div>
-                <button type="button" onclick="addPhotoField()" style="margin-top: 0.5rem; background: none; border: 1px dashed #334155; color: #94a3b8; width: 100%; padding: 0.5rem; border-radius: 8px; cursor: pointer;">+ Add Photo</button>
+                <button type="button" class="btn-add-photo" onclick="addPhotoField()">+ Add Memory</button>
             </div>
 
-            <button type="submit" class="btn-submit">Generate Page & Save</button>
+            <button type="submit" class="btn-submit">Launch Surprise Experience ✦</button>
         </form>
 
         <div id="status" class="status"></div>
 
-        <div id="qrContainer" style="margin-top: 2rem; text-align: center; display: none; background: white; padding: 2rem; border-radius: 16px;">
-            <h3 style="color: #0f172a; margin-bottom: 1rem;">QR Code for Customer</h3>
-            <div id="qrcode" style="display: flex; justify-content: center; margin-bottom: 1rem;"></div>
-            <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 1rem;">Scan to preview or download the image below</p>
-            <button onclick="downloadQR()" style="background: #0f172a; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer;">Download QR Code</button>
+        <div id="qrContainer">
+            <h3>QR Code Ready!</h3>
+            <div id="qrcode"></div>
+            <button onclick="downloadQR()" class="btn-download">Download QR Code</button>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script type="module">
-        // REPLACE WITH YOUR SUPABASE DETAILS
         const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
         const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-        
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        const captions = [
+            "Life is better with you by my side. ✨", "Making memories with you is my favorite thing.", 
+            "The best part of my day is you.", "Forever isn't long enough.", "Love you to the moon and back. 🌙",
+            "My favorite hello and hardest goodbye.", "You make my heart smile.", "Collect moments, not things.",
+            "Happiest with you. ❤️", "You are my sunshine on a rainy day.", "A moment in time, a lifetime in my heart.",
+            "So many of my smiles start with you.", "The highlight of my year.", "Cheers to us! 🥂",
+            "Everything is better when we're together.", "You're the sprinkle on my cupcake.", "Love at first sight, every single day.",
+            "Our story is my favorite.", "Together is a wonderful place to be.", "You had me at hello. 😍",
+            "Building our own little world.", "Pure magic. ✨", "Side by side or miles apart, you're always in my heart.",
+            "Just us. 💖", "Life's a journey, and I'm glad I'm traveling with you.", "My happy place.",
+            "Sweetest memories.", "Another year of amazing you.", "You're simply the best. 🏆",
+            "Grateful for every second with you.", "Partners in crime.", "Home is wherever I'm with you.",
+            "Love you more than coffee (and that's a lot). ☕", "Best adventure ever.", "Soulmate. ❤️",
+            "Every day is a gift with you.", "Sparkling together. ✨", "You're my person.", "Infinitely yours.",
+            "Laughter, love, and you.", "The missing piece to my puzzle.", "Always better together.",
+            "Capturing the magic.", "Beautiful moments with a beautiful soul.", "You make life sweet. 🍭"
+        ];
+
         window.addPhotoField = function() {
+            const list = document.getElementById('photoList');
+            if (list.children.length >= 10) {
+                alert("The Premium plan limit is 10 photos.");
+                return;
+            }
+            
             const div = document.createElement('div');
             div.className = 'photo-entry';
             div.innerHTML = `
-                <input type="text" class="p-url" placeholder="Image URL">
-                <input type="text" class="p-caption" placeholder="Caption">
+                <input type="text" class="p-url" placeholder="Image URL" required>
+                <div style="position: relative; display: flex; align-items: center; gap: 5px;">
+                    <input type="text" class="p-caption" placeholder="Caption">
+                    <button type="button" onclick="randomCaption(this)" title="Magic Caption" style="background: none; border: none; cursor: pointer; font-size: 1.2rem;">✨</button>
+                </div>
+                <button type="button" class="btn-remove" onclick="this.parentElement.remove()">×</button>
             `;
-            document.getElementById('photoList').appendChild(div);
+            list.appendChild(div);
+        }
+
+        window.randomCaption = function(btn) {
+            const input = btn.previousElementSibling;
+            const random = captions[Math.floor(Math.random() * captions.length)];
+            input.value = random;
         }
 
         document.getElementById('occasionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const status = document.getElementById('status');
             
-            // SECURITY CHECK
-            const enteredKey = document.getElementById('adminKey').value;
-            const secretKey = import.meta.env.VITE_ADMIN_KEY;
-
-            if (enteredKey !== secretKey) {
-                status.innerText = '❌ Incorrect Admin Key. Access Denied.';
+            // Security
+            if (document.getElementById('adminKey').value !== import.meta.env.VITE_ADMIN_KEY) {
+                status.innerText = '❌ Access Denied: Incorrect Admin Key';
                 status.className = 'status error';
                 return;
             }
 
             status.className = 'status';
-            status.innerText = 'Saving...';
+            status.innerText = 'Syncing to Studio Database...';
+            status.style.display = 'block';
 
             const photos = [];
             document.querySelectorAll('.photo-entry').forEach(entry => {
@@ -225,47 +421,33 @@
             };
 
             try {
-                const { error } = await supabaseClient
-                    .from('occasions')
-                    .insert([data]);
-
+                const { error } = await supabaseClient.from('occasions').insert([data]);
                 if (error) throw error;
 
                 const finalUrl = `${window.location.origin}/premium-occasion.html?id=${data.slug}`;
-                status.innerText = 'Successfully saved! Link: ' + finalUrl;
+                status.innerText = '✦ Experience Live! Link: ' + finalUrl;
                 status.className = 'status success';
-
-                // Generate QR
                 generateQR(finalUrl);
             } catch (err) {
-                console.error(err);
                 status.innerText = 'Error: ' + err.message;
                 status.className = 'status error';
             }
         });
 
         function generateQR(url) {
-            const container = document.getElementById('qrContainer');
             const qrDiv = document.getElementById('qrcode');
-            qrDiv.innerHTML = ''; // Clear previous
-            new QRCode(qrDiv, {
-                text: url,
-                width: 200,
-                height: 200,
-                colorDark: "#0f172a",
-                colorLight: "#ffffff",
-            });
-            container.style.display = 'block';
+            qrDiv.innerHTML = '';
+            new QRCode(qrDiv, { text: url, width: 220, height: 220, colorDark: "#0b0f1a" });
+            document.getElementById('qrContainer').style.display = 'block';
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
 
         window.downloadQR = function() {
             const img = document.querySelector('#qrcode img');
-            if (img) {
-                const link = document.createElement('a');
-                link.download = 'customer-qr.png';
-                link.href = img.src;
-                link.click();
-            }
+            const link = document.createElement('a');
+            link.download = 'click-turn-qr.png';
+            link.href = img.src;
+            link.click();
         }
     </script>
 </body>
