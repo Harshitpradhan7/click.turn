@@ -7,7 +7,8 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         premium: resolve(__dirname, 'premium-occasion.html'),
-        admin: resolve(__dirname, 'admin-create.html')
+        admin: resolve(__dirname, 'admin-create.html'),
+        intake: resolve(__dirname, 'intake.html')
       }
     }
   }

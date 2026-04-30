@@ -5,409 +5,204 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLICK.TURN | Creative Studio Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #ff4d6d;
-            --secondary: #ffb3c1;
-            --accent: #9333ea;
             --bg: #0b0f1a;
             --card: rgba(30, 41, 59, 0.7);
             --border: rgba(255, 255, 255, 0.1);
             --text: #f8fafc;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Outfit', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem 1rem;
-            overflow-x: hidden;
-        }
+        .container { width: 100%; max-width: 900px; background: var(--card); backdrop-filter: blur(20px); border: 1px solid var(--border); padding: 3rem; border-radius: 32px; }
 
-        /* Ambient Background */
-        .ambient {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-        }
+        header { text-align: center; margin-bottom: 3rem; }
+        header h1 span { color: var(--primary); }
 
-        .blob {
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(255, 77, 109, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            filter: blur(60px);
-            animation: move 20s infinite alternate;
-        }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .full-width { grid-column: span 2; }
 
-        @keyframes move {
-            0% { transform: translate(-10%, -10%); }
-            100% { transform: translate(110%, 110%); }
-        }
+        label { display: block; margin-bottom: 0.6rem; font-size: 0.8rem; font-weight: 800; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px; }
+        input, textarea { width: 100%; padding: 1rem; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 14px; color: white; font-size: 1rem; font-family: inherit; }
 
-        .container {
-            width: 100%;
-            max-width: 800px;
-            background: var(--card);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            padding: 3rem;
-            border-radius: 32px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
+        .section { background: rgba(255, 255, 255, 0.02); padding: 1.5rem; border-radius: 20px; border: 1px solid var(--border); margin-top: 2rem; }
+        .entry { display: grid; grid-template-columns: 1fr 1fr 40px; gap: 0.8rem; margin-bottom: 0.8rem; align-items: center; }
 
-        header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
+        .btn-add { width: 100%; padding: 0.8rem; background: transparent; border: 1px dashed var(--border); color: #94a3b8; border-radius: 12px; cursor: pointer; font-weight: 600; margin-top: 0.5rem; }
+        .btn-remove { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; font-size: 1.2rem; }
 
-        header h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-            margin-bottom: 0.5rem;
-        }
+        .btn-submit { width: 100%; padding: 1.2rem; background: var(--primary); color: white; border: none; border-radius: 16px; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 2rem; box-shadow: 0 10px 25px rgba(255, 77, 109, 0.3); }
 
-        header h1 span {
-            color: var(--primary);
-        }
-
-        header p {
-            color: #94a3b8;
-            font-weight: 300;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .full-width {
-            grid-column: span 2;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.6rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #cbd5e1;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 1rem 1.2rem;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            color: white;
-            font-size: 1rem;
-            transition: 0.3s;
-            font-family: inherit;
-        }
-
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: rgba(15, 23, 42, 0.9);
-            box-shadow: 0 0 0 4px rgba(255, 77, 109, 0.1);
-        }
-
-        .photo-section {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 1.5rem;
-            border-radius: 20px;
-            border: 1px dashed var(--border);
-            margin-top: 1rem;
-        }
-
-        .photo-entry {
-            display: grid;
-            grid-template-columns: 1.5fr 1fr 40px;
-            gap: 0.8rem;
-            margin-bottom: 0.8rem;
-            align-items: center;
-        }
-
-        .btn-add-photo {
-            width: 100%;
-            padding: 0.8rem;
-            background: transparent;
-            border: 1px solid var(--border);
-            color: #94a3b8;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.3s;
-            margin-top: 0.5rem;
-        }
-
-        .btn-add-photo:hover {
-            border-color: var(--secondary);
-            color: white;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .btn-remove {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: none;
-            width: 34px;
-            height: 34px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 1.2rem;
-            background: linear-gradient(135deg, var(--primary) 0%, #fb7185 100%);
-            color: white;
-            border: none;
-            border-radius: 16px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 2rem;
-            box-shadow: 0 10px 25px rgba(255, 77, 109, 0.3);
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(255, 77, 109, 0.5);
-        }
-
-        .status {
-            margin-top: 2rem;
-            padding: 1.2rem;
-            border-radius: 16px;
-            text-align: center;
-            font-weight: 600;
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        .status { margin-top: 2rem; padding: 1.2rem; border-radius: 16px; text-align: center; font-weight: 600; display: none; }
         .success { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); display: block; }
-        .error { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); display: block; }
-
-        #qrContainer {
-            margin-top: 2.5rem;
-            background: white;
-            padding: 2.5rem;
-            border-radius: 28px;
-            text-align: center;
-            display: none;
-            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes popIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        #qrContainer h3 { color: #0f172a; margin-bottom: 1rem; font-weight: 800; }
-        #qrcode { display: flex; justify-content: center; margin-bottom: 1.5rem; }
-
-        .btn-download {
-            background: #0f172a;
-            color: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .btn-download:hover { transform: scale(1.05); }
-
-        @media (max-width: 600px) {
-            .form-grid { grid-template-columns: 1fr; }
-            .full-width { grid-column: span 1; }
-            .container { padding: 1.5rem; border-radius: 24px; }
-            .photo-entry { grid-template-columns: 1fr; }
-            .btn-remove { width: 100%; height: auto; padding: 0.5rem; }
-        }
+        
+        #qrContainer { margin-top: 2.5rem; background: white; padding: 2rem; border-radius: 28px; text-align: center; display: none; color: #0f172a; }
+        #qrcode { display: flex; justify-content: center; margin-bottom: 1rem; }
     </style>
 </head>
 <body>
 
-    <div class="ambient">
-        <div class="blob" style="top: -10%; left: -10%;"></div>
-        <div class="blob" style="bottom: -10%; right: -10%; animation-delay: -5s; background: radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, transparent 70%);"></div>
-    </div>
-
     <div class="container">
         <header>
-            <h1>CLICK<span>.TURN</span></h1>
-            <p>Premium Surprise Creator Portal</p>
+            <h1>CLICK<span>.TURN</span> Admin</h1>
+            <p>Create Dynamic Multi-Message Surprises</p>
         </header>
         
         <form id="occasionForm">
             <div class="form-grid">
                 <div class="form-group">
-                    <label for="slug">URL Identifier</label>
-                    <input type="text" id="slug" placeholder="e.g. jiya-24" required>
+                    <label>URL ID (Slug)</label>
+                    <input type="text" id="slug" placeholder="jiya-24" required>
                 </div>
-
                 <div class="form-group">
-                    <label for="targetDate">Surprise Date</label>
+                    <label>Target Date</label>
                     <input type="datetime-local" id="targetDate" required>
                 </div>
-
                 <div class="form-group full-width">
-                    <label for="title">Main Heading</label>
-                    <input type="text" id="title" placeholder="e.g. Happy Birthday, Jiya!" required>
+                    <label>Heading Title</label>
+                    <input type="text" id="title" placeholder="Happy Birthday, Jiya!" required>
                 </div>
-
                 <div class="form-group full-width">
-                    <label for="subtitle">Sub-heading</label>
-                    <input type="text" id="subtitle" placeholder="e.g. To the most amazing person...">
-                </div>
-
-                <div class="form-group full-width">
-                    <label for="message">Heartfelt Message</label>
-                    <textarea id="message" rows="4" placeholder="Your long message goes here..." required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="sender">From (Your Name)</label>
-                    <input type="text" id="sender" placeholder="Your Name" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="adminKey">Admin Key</label>
-                    <input type="password" id="adminKey" placeholder="••••••••" required>
+                    <label>Sub-heading</label>
+                    <input type="text" id="subtitle" placeholder="Celebrating 24 years...">
                 </div>
             </div>
 
-            <div class="photo-section">
+            <!-- WISHES SECTION -->
+            <div class="section">
+                <label>Message Cards (Wishes)</label>
+                <div id="wishesList">
+                    <div class="wish-entry" style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+                        <textarea class="w-text" rows="2" placeholder="Message content..." required></textarea>
+                        <input type="text" class="w-author" placeholder="Author (e.g. Dad)" style="margin-top: 0.5rem; width: 50%;">
+                    </div>
+                </div>
+                <button type="button" class="btn-add" onclick="addWishField()">+ Add Another Message Card</button>
+            </div>
+
+            <!-- TIMELINE SECTION -->
+            <div class="section">
+                <label>Relationship Timeline (Chapters of Us)</label>
+                <div id="milestonesList">
+                    <div class="wish-entry" style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+                        <input type="text" class="m-date" placeholder="Date (e.g. Oct 2022)" style="margin-bottom: 0.5rem;">
+                        <input type="text" class="m-title" placeholder="Milestone Title (e.g. First Meeting)" style="margin-bottom: 0.5rem;">
+                        <textarea class="m-text" rows="2" placeholder="Brief description..."></textarea>
+                    </div>
+                </div>
+                <button type="button" class="btn-add" onclick="addMilestoneField()">+ Add Milestone Chapter</button>
+            </div>
+
+            <!-- PHOTOS SECTION -->
+            <div class="section">
                 <label>Photo Gallery (Max 10)</label>
                 <div id="photoList">
-                    <div class="photo-entry">
+                    <div class="entry">
                         <input type="text" class="p-url" placeholder="Image URL" required>
                         <input type="text" class="p-caption" placeholder="Caption">
                         <div></div>
                     </div>
                 </div>
-                <button type="button" class="btn-add-photo" onclick="addPhotoField()">+ Add Memory</button>
+                <button type="button" class="btn-add" onclick="addPhotoField()">+ Add Memory Photo</button>
             </div>
 
-            <button type="submit" class="btn-submit">Launch Surprise Experience ✦</button>
+            <div class="form-group" style="margin-top: 2rem;">
+                <label>Admin Key</label>
+                <input type="password" id="adminKey" required>
+            </div>
+
+            <button type="submit" class="btn-submit">Sync & Launch Surprise ✦</button>
         </form>
 
         <div id="status" class="status"></div>
-
         <div id="qrContainer">
-            <h3>QR Code Ready!</h3>
+            <h3>QR Ready!</h3>
             <div id="qrcode"></div>
-            <button onclick="downloadQR()" class="btn-download">Download QR Code</button>
+            <button onclick="downloadQR()" style="background: #0b0f1a; color: white; padding: 0.5rem 1rem; border: none; border-radius: 8px; cursor: pointer;">Download QR</button>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script type="module">
         const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
         const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const captions = [
-            "Life is better with you by my side. ✨", "Making memories with you is my favorite thing.", 
-            "The best part of my day is you.", "Forever isn't long enough.", "Love you to the moon and back. 🌙",
-            "My favorite hello and hardest goodbye.", "You make my heart smile.", "Collect moments, not things.",
-            "Happiest with you. ❤️", "You are my sunshine on a rainy day.", "A moment in time, a lifetime in my heart.",
-            "So many of my smiles start with you.", "The highlight of my year.", "Cheers to us! 🥂",
-            "Everything is better when we're together.", "You're the sprinkle on my cupcake.", "Love at first sight, every single day.",
-            "Our story is my favorite.", "Together is a wonderful place to be.", "You had me at hello. 😍",
-            "Building our own little world.", "Pure magic. ✨", "Side by side or miles apart, you're always in my heart.",
-            "Just us. 💖", "Life's a journey, and I'm glad I'm traveling with you.", "My happy place.",
-            "Sweetest memories.", "Another year of amazing you.", "You're simply the best. 🏆",
-            "Grateful for every second with you.", "Partners in crime.", "Home is wherever I'm with you.",
-            "Love you more than coffee (and that's a lot). ☕", "Best adventure ever.", "Soulmate. ❤️",
-            "Every day is a gift with you.", "Sparkling together. ✨", "You're my person.", "Infinitely yours.",
-            "Laughter, love, and you.", "The missing piece to my puzzle.", "Always better together.",
-            "Capturing the magic.", "Beautiful moments with a beautiful soul.", "You make life sweet. 🍭"
-        ];
+        window.addMilestoneField = function() {
+            const list = document.getElementById('milestonesList');
+            if (list.children.length >= 6) return;
+            const div = document.createElement('div');
+            div.className = 'wish-entry';
+            div.style = "margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; position: relative;";
+            div.innerHTML = `
+                <input type="text" class="m-date" placeholder="Date" style="margin-bottom: 0.5rem;">
+                <input type="text" class="m-title" placeholder="Title" style="margin-bottom: 0.5rem;">
+                <textarea class="m-text" rows="2" placeholder="Description"></textarea>
+                <button type="button" class="btn-remove" style="position: absolute; right: 0; top: 0;" onclick="this.parentElement.remove()">×</button>
+            `;
+            list.appendChild(div);
+        }
+
+        window.addWishField = function() {
+            const div = document.createElement('div');
+            div.className = 'wish-entry';
+            div.style = "margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; position: relative;";
+            div.innerHTML = `
+                <textarea class="w-text" rows="2" placeholder="Message content..."></textarea>
+                <input type="text" class="w-author" placeholder="Author" style="margin-top: 0.5rem; width: 50%;">
+                <button type="button" class="btn-remove" style="position: absolute; right: 0; top: 0;" onclick="this.parentElement.remove()">×</button>
+            `;
+            document.getElementById('wishesList').appendChild(div);
+        }
 
         window.addPhotoField = function() {
             const list = document.getElementById('photoList');
-            if (list.children.length >= 10) {
-                alert("The Premium plan limit is 10 photos.");
-                return;
-            }
-            
+            if (list.children.length >= 10) return;
             const div = document.createElement('div');
-            div.className = 'photo-entry';
+            div.className = 'entry';
             div.innerHTML = `
-                <input type="text" class="p-url" placeholder="Image URL" required>
-                <div style="position: relative; display: flex; align-items: center; gap: 5px;">
-                    <input type="text" class="p-caption" placeholder="Caption">
-                    <button type="button" onclick="randomCaption(this)" title="Magic Caption" style="background: none; border: none; cursor: pointer; font-size: 1.2rem;">✨</button>
-                </div>
+                <input type="text" class="p-url" placeholder="Image URL">
+                <input type="text" class="p-caption" placeholder="Caption">
                 <button type="button" class="btn-remove" onclick="this.parentElement.remove()">×</button>
             `;
             list.appendChild(div);
         }
 
-        window.randomCaption = function(btn) {
-            const input = btn.previousElementSibling;
-            const random = captions[Math.floor(Math.random() * captions.length)];
-            input.value = random;
-        }
-
         document.getElementById('occasionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const status = document.getElementById('status');
-            
-            // Security
             if (document.getElementById('adminKey').value !== import.meta.env.VITE_ADMIN_KEY) {
-                status.innerText = '❌ Access Denied: Incorrect Admin Key';
-                status.className = 'status error';
-                return;
+                status.innerText = '❌ Access Denied'; status.className = 'status error'; status.style.display = 'block'; return;
             }
 
-            status.className = 'status';
-            status.innerText = 'Syncing to Studio Database...';
-            status.style.display = 'block';
+            status.style.display = 'block'; status.innerText = 'Syncing...';
 
             const photos = [];
-            document.querySelectorAll('.photo-entry').forEach(entry => {
-                const url = entry.querySelector('.p-url').value;
-                const caption = entry.querySelector('.p-caption').value;
-                if(url) photos.push({ url, caption });
+            document.querySelectorAll('.entry').forEach(e => {
+                const url = e.querySelector('.p-url').value;
+                if(url) photos.push({ url: url, caption: e.querySelector('.p-caption').value });
+            });
+
+            const wishes = [];
+            document.querySelectorAll('#wishesList .wish-entry').forEach(e => {
+                const text = e.querySelector('.w-text').value;
+                if(text) wishes.push({ text: text, author: e.querySelector('.w-author').value || "Anonymous" });
+            });
+
+            const timeline = [];
+            document.querySelectorAll('#milestonesList .wish-entry').forEach(e => {
+                const title = e.querySelector('.m-title').value;
+                if(title) {
+                    timeline.push({ 
+                        date: e.querySelector('.m-date').value, 
+                        title: title, 
+                        text: e.querySelector('.m-text').value 
+                    });
+                }
             });
 
             const data = {
@@ -415,39 +210,30 @@
                 title: document.getElementById('title').value,
                 subtitle: document.getElementById('subtitle').value,
                 target_date: document.getElementById('targetDate').value,
-                message: document.getElementById('message').value,
-                sender_name: document.getElementById('sender').value,
-                photos: photos
+                wishes: wishes,
+                photos: photos,
+                timeline: timeline
             };
 
             try {
                 const { error } = await supabaseClient.from('occasions').insert([data]);
                 if (error) throw error;
-
                 const finalUrl = `${window.location.origin}/premium-occasion.html?id=${data.slug}`;
-                status.innerText = '✦ Experience Live! Link: ' + finalUrl;
+                status.innerText = '✦ Experience Live! ' + finalUrl;
                 status.className = 'status success';
                 generateQR(finalUrl);
-            } catch (err) {
-                status.innerText = 'Error: ' + err.message;
-                status.className = 'status error';
-            }
+            } catch (err) { status.innerText = 'Error: ' + err.message; status.className = 'status error'; }
         });
 
         function generateQR(url) {
-            const qrDiv = document.getElementById('qrcode');
-            qrDiv.innerHTML = '';
-            new QRCode(qrDiv, { text: url, width: 220, height: 220, colorDark: "#0b0f1a" });
+            const qrDiv = document.getElementById('qrcode'); qrDiv.innerHTML = '';
+            new QRCode(qrDiv, { text: url, width: 220, height: 220 });
             document.getElementById('qrContainer').style.display = 'block';
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
 
         window.downloadQR = function() {
             const img = document.querySelector('#qrcode img');
-            const link = document.createElement('a');
-            link.download = 'click-turn-qr.png';
-            link.href = img.src;
-            link.click();
+            const link = document.createElement('a'); link.download = 'qr.png'; link.href = img.src; link.click();
         }
     </script>
 </body>

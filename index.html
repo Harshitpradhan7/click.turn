@@ -233,7 +233,7 @@
 
         <h2 class="pricing-title">Choose Your Plan</h2>
 
-        <div class="tier" onclick="payNow(199, 'Basic')">
+        <div class="tier" onclick="window.location.href='intake.html?tier=basic'">
             <div class="tier-info">
                 <h3>Basic Surprise</h3>
                 <p>5 Photos • Custom Message • 1 Year Hosting</p>
@@ -241,7 +241,7 @@
             <div class="price">₹199</div>
         </div>
 
-        <div class="tier" style="border-color: var(--accent);" onclick="payNow(299, 'Premium')">
+        <div class="tier" style="border-color: var(--accent);" onclick="window.location.href='intake.html?tier=premium'">
             <div class="tier-info">
                 <h3>Premium Forever ✦</h3>
                 <p>10 Photos • Music • Countdown • Lifetime</p>
@@ -249,7 +249,7 @@
             <div class="price">₹299</div>
         </div>
 
-        <a href="https://wa.me/YOUR_NUMBER?text=Hi! I just paid for the Click.Turn surprise. Here is my screenshot." class="btn-buy" id="whatsappLink">Step 2: Send Screenshot on WhatsApp</a>
+        <a href="intake.html" class="btn-buy" id="whatsappLink">Get Started Now</a>
 
         <p style="text-align: center; margin-top: 1rem; font-size: 0.8rem; color: #94a3b8;">Click a plan above to pay via GPay/PhonePe</p>
 
@@ -263,7 +263,7 @@
     </div>
 
     <script>
-        const UPI_ID = "YOUR_UPI_ID@okaxis"; // REPLACE THIS WITH YOUR UPI ID
+        const UPI_ID = "9588269825-2@ybl"; // REPLACE THIS WITH YOUR UPI ID
         const PHONE = "919588269825"; // REPLACE WITH YOUR WHATSAPP NUMBER
 
         function payNow(amount, tier) {

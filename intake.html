@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLICK.TURN | Customize Your Surprise</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #ff4d6d;
+            --bg: #0b0f1a;
+            --card: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; padding: 2rem 1rem; min-height: 100vh; overflow-x: hidden; }
+
+        .container { width: 100%; max-width: 600px; margin: 0 auto; background: var(--card); backdrop-filter: blur(20px); border: 1px solid var(--border); padding: 2.5rem; border-radius: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+
+        h1 { font-size: 2.2rem; margin-bottom: 0.5rem; text-align: center; }
+        p.subtitle { text-align: center; color: #94a3b8; margin-bottom: 2rem; font-size: 0.9rem; }
+
+        .section-title { font-size: 0.75rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; font-size: 0.8rem; font-weight: 600; color: #94a3b8; }
+        input, textarea { width: 100%; padding: 1rem; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; color: white; font-family: inherit; font-size: 1rem; }
+
+        .wish-entry { background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 16px; margin-bottom: 1rem; border: 1px solid var(--border); }
+        .magic-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; filter: grayscale(1); transition: 0.3s; }
+        .magic-btn:hover { filter: grayscale(0); transform: scale(1.2); }
+
+        .btn-action { width: 100%; padding: 1.2rem; background: var(--primary); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: 0.3s; margin-top: 1rem; }
+        .btn-action:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(255, 77, 109, 0.3); }
+
+        .btn-wa { background: #25D366; color: white; padding: 1.2rem; display: block; text-decoration: none; border-radius: 16px; font-weight: 700; margin-top: 1rem; text-align: center; }
+
+        #step2, #payQRContainer { display: none; text-align: center; }
+        .step-indicator { display: flex; justify-content: center; gap: 10px; margin-bottom: 2rem; }
+        .dot { width: 40px; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        .dot.active { background: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="step-indicator">
+            <div class="dot active" id="dot1"></div>
+            <div class="dot" id="dot2"></div>
+        </div>
+
+        <!-- STEP 1 -->
+        <div id="step1">
+            <h1>Personalize Surprise</h1>
+            <p class="subtitle">Fill in the details for your special one</p>
+            
+            <div class="section-title">Core Details</div>
+            <div class="form-group">
+                <label>Occasion Date & Time</label>
+                <input type="datetime-local" id="targetDate" required>
+            </div>
+            <div class="form-group">
+                <label>Person's Name</label>
+                <input type="text" id="name" placeholder="Who is the surprise for?" required>
+            </div>
+            <div class="form-group">
+                <label>Surprise Heading</label>
+                <div style="display: flex; gap: 5px; align-items: center;">
+                    <input type="text" id="title" placeholder="e.g. Happy 25th, Dear!" required>
+                    <button type="button" class="magic-btn" onclick="randomHeading()" title="Magic Heading">✨</button>
+                </div>
+                <p class="photo-hint">Enter a name above, then click ✨ for ideas!</p>
+            </div>
+
+            <div class="section-title">Message Cards (Wishes)</div>
+            <div id="wishesList">
+                <div class="wish-entry">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <label>Message #1</label>
+                        <button type="button" class="magic-btn" onclick="randomWish(this)" title="Magic Message">✨</button>
+                    </div>
+                    <textarea class="w-text" rows="3" placeholder="Type your heartfelt wish..."></textarea>
+                    <input type="text" class="w-author" placeholder="From (e.g. Mom)" style="margin-top: 0.5rem; font-size: 0.8rem;">
+                </div>
+            </div>
+            <button type="button" onclick="addWish()" style="width: 100%; padding: 0.8rem; background: none; border: 1px dashed var(--border); color: #94a3b8; border-radius: 12px; cursor: pointer; margin-bottom: 1.5rem;">+ Add Another Message</button>
+
+            <div class="section-title">The Memories (<span id="photoCountText">5</span> Photos)</div>
+            <div id="photosList" style="margin-bottom: 2rem;">
+                <!-- Dynamically generated -->
+            </div>
+
+            <div class="section-title">Chapters of Us (Timeline)</div>
+            <div id="milestonesList">
+                <div class="wish-entry">
+                    <label>Milestone #1</label>
+                    <input type="text" class="m-date" placeholder="When? (e.g. Oct 2022)" style="margin-top: 0.5rem;">
+                    <input type="text" class="m-title" placeholder="Title (e.g. First Meeting)" style="margin-top: 0.5rem;">
+                    <textarea class="m-text" rows="2" placeholder="Briefly describe the moment..." style="margin-top: 0.5rem;"></textarea>
+                </div>
+            </div>
+            <button type="button" onclick="addMilestone()" style="width: 100%; padding: 0.8rem; background: none; border: 1px dashed var(--border); color: #94a3b8; border-radius: 12px; cursor: pointer; margin-bottom: 1.5rem;">+ Add Milestone</button>
+
+            <button onclick="goToPayment()" class="btn-action">Continue to Payment ✦</button>
+        </div>
+
+        <!-- STEP 2 -->
+        <div id="step2">
+            <h1>Complete Your Order</h1>
+            <p class="subtitle">Scan to pay and finalize your surprise</p>
+
+            <div id="payQRContainer" style="background: white; padding: 2rem; border-radius: 24px; margin: 1.5rem 0;">
+                <div id="payQR" style="display: flex; justify-content: center; margin-bottom: 1rem;"></div>
+                <p id="priceText" style="color: #0f172a; font-weight: 800;">₹199 (Basic Page)</p>
+            </div>
+
+            <button onclick="triggerUPI()" class="btn-action">Pay Now via UPI</button>
+            <p style="margin-top: 2rem; font-size: 0.8rem; color: #94a3b8;">Final Step: Send payment proof</p>
+            <a href="#" id="waButton" class="btn-wa">Send Screenshot to WhatsApp</a>
+        </div>
+    </div>
+
+    <script src="headings.js"></script>
+    <script>
+        const UPI_ID = "9588269825-2@ybl";
+        const PHONE = "919588269825";
+        
+        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+        const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const tier = urlParams.get('tier') || 'basic';
+        const photoLimit = tier === 'premium' ? 10 : 5;
+        const finalPrice = tier === 'premium' ? 299 : 199;
+
+        // Initialize Photos List
+        const photosList = document.getElementById('photosList');
+        document.getElementById('photoCountText').innerText = photoLimit;
+        for (let i = 1; i <= photoLimit; i++) {
+            const div = document.createElement('div');
+            div.style.marginBottom = "0.8rem";
+            div.innerHTML = `
+                <label style="font-size: 0.7rem; color: #64748b;">Photo #${i}</label>
+                <input type="file" class="photo-file" accept="image/*" style="padding: 0.5rem; font-size: 0.8rem;">
+            `;
+            photosList.appendChild(div);
+        }
+
+        const magicWishes = [
+            "Life is not measured by the number of breaths we take, but by the moments that take our breath away.",
+            "Watching you grow into the brilliant, kind, and fearless person you are today is my greatest joy.",
+            "You are the melody to my song, the light to my path, and the joy in my heart. Cheers to you!",
+            "To the world you may be one person, but to me you are the world. Happy Birthday!",
+            "May your day be as bright as your smile and as beautiful as your heart.",
+            "Another year of making memories, chasing dreams, and being your amazing self.",
+            "You inspire everyone around you with your energy and warmth. So proud of you!",
+            "25 years of you being the most annoying but also the most amazing person in my life. Love you!"
+        ];
+
+        let usedHeadings = [];
+        let usedWishes = [];
+
+        window.randomHeading = function() {
+            const name = document.getElementById('name').value || "Someone Special";
+            
+            // headingTemplates is now coming from headings.js
+            let available = headingTemplates.filter(t => !usedHeadings.includes(t));
+            
+            if (available.length === 0) {
+                usedHeadings = [];
+                available = [...headingTemplates];
+            }
+
+            const template = available[Math.floor(Math.random() * available.length)];
+            usedHeadings.push(template);
+            
+            document.getElementById('title').value = template.replace("{name}", name);
+        }
+
+        window.addMilestone = function() {
+            const list = document.getElementById('milestonesList');
+            if (list.children.length >= 5) return;
+            const div = document.createElement('div');
+            div.className = 'wish-entry';
+            div.style.position = 'relative';
+            div.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <label>Milestone #${list.children.length + 1}</label>
+                    <button type="button" style="background: none; border: none; color: #ef4444; cursor: pointer;" onclick="this.parentElement.parentElement.remove()">×</button>
+                </div>
+                <input type="text" class="m-date" placeholder="When? (e.g. Jan 2023)">
+                <input type="text" class="m-title" placeholder="Title" style="margin-top: 0.5rem;">
+                <textarea class="m-text" rows="2" placeholder="Description" style="margin-top: 0.5rem;"></textarea>
+            `;
+            list.appendChild(div);
+        }
+
+        window.addWish = function() {
+            const list = document.getElementById('wishesList');
+            if (list.children.length >= 5) return;
+            const div = document.createElement('div');
+            div.className = 'wish-entry';
+            div.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <label>Message #${list.children.length + 1}</label>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="magic-btn" onclick="randomWish(this)">✨</button>
+                        <button type="button" style="background: none; border: none; color: #ef4444; cursor: pointer;" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
+                    </div>
+                </div>
+                <textarea class="w-text" rows="3" placeholder="Type your heartfelt wish..."></textarea>
+                <input type="text" class="w-author" placeholder="From (e.g. Bestie)" style="margin-top: 0.5rem; font-size: 0.8rem;">
+            `;
+            list.appendChild(div);
+        }
+
+        window.randomWish = function(btn) {
+            const card = btn.closest('.wish-entry');
+            const textarea = card.querySelector('.w-text');
+            
+            // Filter out used wishes
+            let available = magicWishes.filter(w => !usedWishes.includes(w));
+            
+            // Reset if all used
+            if (available.length === 0) {
+                usedWishes = [];
+                available = [...magicWishes];
+            }
+
+            const wish = available[Math.floor(Math.random() * available.length)];
+            usedWishes.push(wish);
+            textarea.value = wish;
+        }
+
+        window.goToPayment = async function() {
+            const name = document.getElementById('name').value;
+            const title = document.getElementById('title').value;
+            
+            if(!name) { alert("Please enter the Person's Name!"); return; }
+            if(!title) { alert("Please enter a Surprise Heading!"); return; }
+            
+            const btn = document.querySelector('.btn-action');
+            const originalText = btn.innerText;
+            btn.innerText = "🚀 Uploading Memories...";
+            btn.disabled = true;
+
+            try {
+                // 1. Collect Photo Files
+                const photoFiles = [];
+                document.querySelectorAll('.photo-file').forEach(input => {
+                    if (input.files[0]) photoFiles.push(input.files[0]);
+                });
+
+                // 2. Upload to Supabase Storage
+                const photoUrls = [];
+                for (const file of photoFiles) {
+                    const fileName = `${Date.now()}_${file.name}`;
+                    const { data, error } = await supabaseClient.storage
+                        .from('order-images')
+                        .upload(fileName, file);
+                    
+                    if (data) {
+                        const { data: { publicUrl } } = supabaseClient.storage
+                            .from('order-images')
+                            .getPublicUrl(fileName);
+                        photoUrls.push(publicUrl);
+                    }
+                }
+
+                // 3. Save Order Data to Supabase
+                const orderId = 'ORD' + Math.random().toString(36).substr(2, 9).toUpperCase();
+                
+                const wishes = [];
+                document.querySelectorAll('#wishesList .wish-entry').forEach(e => {
+                    const text = e.querySelector('.w-text').value;
+                    if(text) wishes.push({ text: text, author: e.querySelector('.w-author').value || "Dear" });
+                });
+
+                const timeline = [];
+                document.querySelectorAll('#milestonesList .wish-entry').forEach(e => {
+                    const t_title = e.querySelector('.m-title').value;
+                    if(t_title) {
+                        timeline.push({ 
+                            date: e.querySelector('.m-date').value, 
+                            title: t_title, 
+                            text: e.querySelector('.m-text').value 
+                        });
+                    }
+                });
+
+                // (Note: Requires 'orders' table in Supabase)
+                await supabaseClient.from('orders').insert([{
+                    order_id: orderId,
+                    recipient_name: name,
+                    heading: title,
+                    tier: tier,
+                    wishes: wishes,
+                    timeline: timeline,
+                    photos: photoUrls,
+                    status: 'pending'
+                }]);
+
+                // 4. Move to Step 2
+                document.getElementById('step1').style.display = 'none';
+                document.getElementById('step2').style.display = 'block';
+                document.getElementById('dot2').classList.add('active');
+                document.getElementById('priceText').innerText = `₹${finalPrice} (${tier === 'premium' ? 'Premium Forever' : 'Basic Page'})`;
+
+                // Generate QR
+                const upiUrl = `upi://pay?pa=${UPI_ID}&pn=CLICK_TURN&am=${finalPrice}&cu=INR&tn=${orderId}`;
+                const qrDiv = document.getElementById('payQR');
+                qrDiv.innerHTML = '';
+                
+                if (typeof QRCode !== 'undefined') {
+                    new QRCode(qrDiv, { text: upiUrl, width: 200, height: 200 });
+                    document.getElementById('payQRContainer').style.display = 'block';
+                }
+
+                // WhatsApp link
+                const waText = `Hi! I just placed an order (${orderId}) for the ${tier} surprise: "${title}". Here is my payment screenshot.`;
+                document.getElementById('waButton').href = `https://wa.me/${PHONE}?text=${waText}`;
+
+            } catch (err) {
+                console.error(err);
+                alert("Upload failed. Please try again or share images on WhatsApp.");
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        window.triggerUPI = function() {
+            window.location.href = `upi://pay?pa=${UPI_ID}&pn=CLICK_TURN&am=${finalPrice}&cu=INR&tn=ClickTurn_Order`;
+        }
+    </script>
+</body>
+</html>

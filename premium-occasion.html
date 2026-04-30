@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,16 +13,52 @@
     <meta name="twitter:card" content="summary_large_image">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;1,6..96,400&family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;1,6..96,400&family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
             --primary: #ff4d6d;
             --secondary: #ffb3c1;
+            --accent: #c9184a;
+            --gold: #ffd700;
+            --bg: #0b090a;
             --dark: #1a1a1a;
             --light: #fff5f6;
-            --gold: #d4af37;
             --glass: rgba(255, 255, 255, 0.1);
             --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        h1, h2 {
+            font-family: 'Bodoni Moda', serif;
+            background: linear-gradient(90deg, #fff, #ffd700, #fff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 5s linear infinite;
+            text-align: center;
+            width: 100%;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .floating-heart {
+            position: fixed;
+            pointer-events: none;
+            z-index: 5;
+            font-size: 1.5rem;
+            opacity: 0.6;
+            animation: floatUp 6s linear forwards;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0.5) rotate(0deg); opacity: 0; }
+            20% { opacity: 0.6; }
+            100% { transform: translateY(-100px) scale(1.2) rotate(360deg); opacity: 0; }
         }
 
         * {
@@ -51,9 +88,15 @@
             transition: transform 0.1s ease;
             display: none;
         }
+
         @media (min-width: 1024px) {
-            body { cursor: none; }
-            #cursor { display: block; }
+            body {
+                cursor: none;
+            }
+
+            #cursor {
+                display: block;
+            }
         }
 
         /* --- Background Elements --- */
@@ -77,8 +120,13 @@
         }
 
         @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(100px, 100px) scale(1.2); }
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(100px, 100px) scale(1.2);
+            }
         }
 
         /* --- Loading Screen --- */
@@ -101,19 +149,227 @@
         }
 
         @keyframes beat {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
         }
 
-        /* --- Sections --- */
+        /* --- Premium Cake CSS --- */
+        .cake-container {
+            position: relative;
+            height: 350px;
+            width: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            margin: 0 auto;
+        }
+        .cake { position: relative; width: 250px; display: flex; flex-direction: column; align-items: center; }
+        
+        .plate {
+            width: 280px;
+            height: 15px;
+            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            border-radius: 50%;
+            margin-bottom: -5px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            z-index: 1;
+        }
+
+        .layer {
+            position: relative;
+            border-radius: 15px 15px 5px 5px;
+            box-shadow: inset 0 -5px 10px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+        
+        .layer-bottom { width: 220px; height: 70px; background: #ffb3c1; }
+        .layer-middle { width: 170px; height: 60px; background: #ffe5ec; margin-bottom: -5px; }
+        .layer-top { width: 120px; height: 50px; background: #ff4d6d; margin-bottom: -5px; }
+
+        .icing-drip {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background: #fff;
+            border-radius: 15px 15px 0 0;
+            opacity: 0.9;
+        }
+        
+        .drip-effect {
+            position: absolute;
+            top: 15px;
+            width: 12px;
+            height: 25px;
+            background: #fff;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .candle {
+            position: absolute;
+            top: -45px;
+            width: 10px;
+            height: 45px;
+            background: repeating-linear-gradient(45deg, #fff, #fff 5px, var(--primary) 5px, var(--primary) 10px);
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        .flame {
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 15px;
+            height: 25px;
+            background: radial-gradient(circle at 50% 80%, #ffeb3b, #ff9800, #f44336);
+            border-radius: 50% 50% 20% 20%;
+            box-shadow: 0 0 15px #ff9800;
+            animation: flicker 0.6s infinite alternate;
+        }
+        @keyframes flicker {
+            0% { transform: translateX(-50%) scale(1); }
+            100% { transform: translateX(-50%) scale(1.1) rotate(2deg); }
+        }
+        .candle.out .flame { display: none; }
+        .candle.out::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            width: 2px;
+            height: 10px;
+            background: rgba(255,255,255,0.2);
+            animation: smoke 2s ease-out forwards;
+        }
+        @keyframes smoke {
+            0% { transform: translateY(0) opacity: 1; }
+            100% { transform: translateY(-20px) opacity: 0; }
+        }
+        /* --- Envelope Intro --- */
+        #envelope-wrapper {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 1s ease-in-out;
+        }
+        .envelope {
+            width: 300px;
+            height: 200px;
+            background: #fdf0d5;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            transition: 0.5s;
+        }
+        .envelope:hover { transform: scale(1.05); }
+        .envelope::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-top: 100px solid #f2e1b8;
+            z-index: 2;
+            transition: 0.5s;
+            transform-origin: top;
+        }
+        .envelope.open::before { transform: rotateX(180deg); }
+        .seal {
+            position: absolute;
+            top: 80px; left: 130px;
+            width: 40px; height: 40px;
+            background: #780000;
+            border-radius: 50%;
+            z-index: 3;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffd700;
+            font-size: 0.8rem;
+        }
+        
+        .scratch-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 100;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        #scratch-canvas {
+            width: 100%; height: 100%;
+            cursor: crosshair;
+        }
+        .timeline {
+            position: relative;
+            max-width: 1000px;
+            margin: 6rem auto;
+            width: 100%;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%; width: 2px; height: 100%;
+            background: var(--glass-border);
+            transform: translateX(-50%);
+        }
+        .timeline-item {
+            margin-bottom: 6rem;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: 0.8s;
+        }
+        .timeline-item.active { opacity: 1; transform: translateY(0); }
+        .timeline-content {
+            width: 42%;
+            padding: 2.5rem;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border-radius: 32px;
+            border: 1px solid var(--glass-border);
+            text-align: left;
+            transition: 0.3s;
+        }
+        .timeline-content:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.02);
+        }
+        .timeline-item:nth-child(even) { flex-direction: row-reverse; }
+        .timeline-dot {
+            width: 20px; height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            position: absolute;
+            left: 50%; transform: translateX(-50%);
+            box-shadow: 0 0 15px var(--primary);
+        }
         section {
-            min-height: 100vh;
-            padding: 4rem 1.5rem;
+            min-height: 80vh;
+            padding: 6rem 1.5rem;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             position: relative;
+            text-align: center;
         }
 
         /* --- Hero --- */
@@ -123,11 +379,12 @@
 
         .hero h1 {
             font-family: 'Bodoni Moda', serif;
-            font-size: clamp(3rem, 10vw, 7rem);
+            font-size: clamp(2.5rem, 8vw, 5rem);
             font-weight: 700;
             margin-bottom: 1rem;
             opacity: 0;
             transform: translateY(30px);
+            text-align: center;
         }
 
         .hero p {
@@ -159,7 +416,23 @@
             background: var(--primary);
         }
 
-        /* --- Photo Stack --- */
+        .btn-back {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            z-index: 2000;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 0.8rem 1.2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            transition: 0.3s;
+        }
+        .btn-back:hover { background: var(--primary); transform: translateX(-5px); }
         .photo-stack {
             position: relative;
             width: 300px;
@@ -173,7 +446,7 @@
             height: 100%;
             background: white;
             padding: 10px 10px 40px 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             border-radius: 2px;
             transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
@@ -203,9 +476,9 @@
             background: var(--glass);
             border: 1px solid var(--glass-border);
             backdrop-filter: blur(15px);
-            padding: 3rem 2rem;
-            border-radius: 20px;
-            max-width: 600px;
+            padding: 5rem 3rem;
+            border-radius: 32px;
+            max-width: 700px;
             text-align: center;
             opacity: 0;
             transform: scale(0.9);
@@ -227,7 +500,9 @@
         .countdown {
             display: flex;
             gap: 1.5rem;
-            margin-top: 2rem;
+            margin-top: 3rem;
+            justify-content: center;
+            width: 100%;
         }
 
         .count-item {
@@ -253,7 +528,7 @@
         footer {
             padding: 4rem 2rem;
             text-align: center;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0, 0, 0, 0.3);
         }
 
         .btn-qr {
@@ -275,7 +550,25 @@
             box-shadow: 0 10px 20px rgba(255, 77, 109, 0.3);
         }
 
-        /* --- Animations --- */
+        /* --- Responsive Styles --- */
+        @media (max-width: 768px) {
+            section { padding: 4rem 1.2rem; min-height: 50vh; }
+            .hero h1 { font-size: 2.8rem; }
+            .countdown { gap: 0.8rem; flex-wrap: wrap; }
+            .count-num { font-size: 1.8rem; }
+            
+            .timeline::before { left: 20px; transform: none; }
+            .timeline-item { flex-direction: column !important; align-items: flex-start; margin-bottom: 3rem; }
+            .timeline-content { width: calc(100% - 50px) !important; margin-left: 50px; padding: 1.5rem; }
+            .timeline-dot { left: 20px; transform: translateX(-50%); }
+            
+            .envelope { width: 260px; height: 180px; }
+            .envelope::before { border-left-width: 130px; border-right-width: 130px; border-top-width: 80px; }
+            .seal { left: 110px; top: 70px; }
+            
+            .cake-container { transform: scale(0.85); height: 300px; }
+            .message-box { padding: 3rem 1.5rem; border-radius: 24px; }
+        }
         .reveal {
             opacity: 0;
             transform: translateY(50px);
@@ -296,7 +589,10 @@
         }
     </style>
 </head>
+
 <body>
+
+    <a href="index.html" class="btn-back">← Back to Studio</a>
 
     <div id="loader">
         <div class="loader-heart">❤</div>
@@ -316,22 +612,35 @@
         <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
     </audio>
 
+    <!-- ENVELOPE INTRO -->
+    <div id="envelope-wrapper" style="display: flex;">
+        <div class="envelope" id="envelope" onclick="openEnvelope()">
+            <div class="seal">CT</div>
+        </div>
+        <p style="position: absolute; bottom: 15vh; color: var(--secondary); text-align: center; width: 100%;">You have a secret delivery. Click to open.</p>
+    </div>
+
     <!-- HERO SECTION -->
-    <section class="hero">
-        <h1 id="hero-title">Happy Birthday</h1>
-        <p id="hero-subtitle">To the one who makes every day brighter</p>
+    <section class="hero" style="display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%;">
+        <h1 id="hero-title" style="text-align: center; width: 100%;">Happy Birthday</h1>
+        <p id="hero-subtitle" style="text-align: center; width: 100%;">To the one who makes every day brighter</p>
         <div class="countdown" id="countdown">
-            <div class="count-item"><span class="count-num" id="days">00</span><span class="count-label">Days</span></div>
-            <div class="count-item"><span class="count-num" id="hours">00</span><span class="count-label">Hours</span></div>
-            <div class="count-item"><span class="count-num" id="mins">00</span><span class="count-label">Mins</span></div>
-            <div class="count-item"><span class="count-num" id="secs">00</span><span class="count-label">Secs</span></div>
+            <div class="count-item"><span class="count-num" id="days">00</span><span class="count-label">Days</span>
+            </div>
+            <div class="count-item"><span class="count-num" id="hours">00</span><span class="count-label">Hours</span>
+            </div>
+            <div class="count-item"><span class="count-num" id="mins">00</span><span class="count-label">Mins</span>
+            </div>
+            <div class="count-item"><span class="count-num" id="secs">00</span><span class="count-label">Secs</span>
+            </div>
         </div>
     </section>
 
     <!-- MEMORIES SECTION -->
     <section id="memories">
         <div class="reveal">
-            <h2 style="font-family: 'Bodoni Moda'; font-size: 3rem; margin-bottom: 2rem; text-align: center;">Our Journey</h2>
+            <h2 style="font-family: 'Bodoni Moda'; font-size: 3rem; margin-bottom: 2rem; text-align: center;">Our
+                Journey</h2>
         </div>
         <div class="photo-stack" id="photoStack">
             <!-- Photos will be injected here -->
@@ -339,16 +648,70 @@
         <p style="margin-top: 3rem; color: var(--secondary); font-style: italic;">Tap a photo to see the next one</p>
     </section>
 
-    <!-- MESSAGE SECTION -->
-    <section>
-        <div class="message-box reveal" id="messageBox">
-            <h2>From My Heart</h2>
-            <p id="mainMessage">
-                "Life is not measured by the number of breaths we take, but by the moments that take our breath away. You are that moment for me, every single day."
-            </p>
-            <div style="margin-top: 2rem; color: var(--gold); font-family: 'Playfair Display';">
-                — With Love, <span id="senderName">Harry</span>
+    <!-- TIMELINE SECTION -->
+    <section id="timeline">
+        <div class="reveal" style="text-align: center; margin-bottom: 4rem;">
+            <h2>The Chapters of Us</h2>
+            <p style="color: var(--secondary);">Every moment is a milestone</p>
+        </div>
+        
+        <div class="timeline" id="timeline-container">
+            <!-- Items will be injected -->
+        </div>
+    </section>
+
+    <!-- CAKE SECTION -->
+    <section id="cake-section">
+        <div class="reveal" style="text-align: center; margin-bottom: 3rem;">
+            <h2 style="font-size: 3rem;">Make a Wish</h2>
+            <p style="color: var(--secondary); font-style: italic;">Tap the candles to blow them out...</p>
+        </div>
+        
+        <div class="cake-container">
+            <div class="cake">
+                <!-- Top Layer -->
+                <div class="layer layer-top">
+                    <div class="icing-drip"></div>
+                    <div class="drip-effect" style="left: 10px;"></div>
+                    <div class="drip-effect" style="left: 40px; height: 35px;"></div>
+                    <div class="drip-effect" style="left: 80px;"></div>
+                    <div class="candles">
+                        <div class="candle" onclick="blowCandle(this)" style="left: 20px;"><div class="flame"></div></div>
+                        <div class="candle" onclick="blowCandle(this)" style="left: 55px;"><div class="flame"></div></div>
+                        <div class="candle" onclick="blowCandle(this)" style="left: 90px;"><div class="flame"></div></div>
+                    </div>
+                </div>
+                <!-- Middle Layer -->
+                <div class="layer layer-middle">
+                    <div class="icing-drip"></div>
+                    <div class="drip-effect" style="left: 20px; height: 30px;"></div>
+                    <div class="drip-effect" style="left: 130px;"></div>
+                </div>
+                <!-- Bottom Layer -->
+                <div class="layer layer-bottom">
+                    <div class="icing-drip"></div>
+                    <div class="drip-effect" style="left: 50px;"></div>
+                    <div class="drip-effect" style="left: 160px; height: 40px;"></div>
+                </div>
+                <!-- Gold Plate -->
+                <div class="plate"></div>
             </div>
+        </div>
+
+        <div id="wish-message" style="margin-top: 3rem; text-align: center; opacity: 0; transition: 2s; transform: translateY(20px);">
+            <h3 style="font-family: 'Bodoni Moda'; font-size: 2.5rem; color: var(--gold);">Your wish is being sent to the stars... ✨</h3>
+            <p>May all your dreams come true!</p>
+        </div>
+    </section>
+
+    <!-- MESSAGES SECTION -->
+    <section id="wishes">
+        <div class="reveal" style="text-align: center; margin-bottom: 3rem;">
+            <h2 style="font-family: 'Bodoni Moda'; font-size: 3rem;">Words From the Heart</h2>
+        </div>
+        <div id="wishesGrid"
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1000px; margin: 0 auto; width: 100%;">
+            <!-- Wishes will be injected here -->
         </div>
     </section>
 
@@ -360,26 +723,36 @@
         </div>
     </section>
 
-    <footer>
+    <footer style="position: relative; z-index: 100;">
         <p>© 2026 Crafted with Love</p>
-        <button class="btn-qr" id="shareBtn">Get Your Own Page</button>
+        <a href="index.html" class="btn-qr" style="display: inline-block; text-decoration: none; margin-top: 1rem;">Get Your Own Page</a>
     </footer>
 
     <script type="module">
         // CONFIGURATION - Update these values for each customer
         let config = {
-            title: "Happy Birthday, Deat!",
+            title: "Happy Birthday, Dear!",
             subtitle: "Celebrating 24 years of brilliance",
             targetDate: "2026-05-31T00:00:00", // The big day!
-            message: "You are the melody to my song, the light to my path, and the joy in my heart. Watching you achieve your dreams is my favorite thing to do. Cheers to 25!",
+            message: "You are the melody to my song...", // fallback
+            wishes: [
+                { text: "Watching you grow into the brilliant woman you are today has been the greatest privilege.", author: "Mom" },
+                { text: "25 years of you being the most amazing person in my life. Love you, always.", author: "Rohan" },
+                { text: "Every moment with you is a memory I treasure. Wishing you nothing but joy.", author: "Priya" }
+            ],
             sender: "Rahul",
             musicUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+            timeline: [
+                { date: "Oct 2022", title: "The First Hello", text: "In that small cafe where it all began." },
+                { date: "Jan 2023", title: "First Trip", text: "Exploring the mountains of Manali together." },
+                { date: "May 2024", title: "Moving In", text: "Starting our little home full of dreams." }
+            ],
             photos: [
-                { url: "https://images.unsplash.com/photo-1518893063132-36e46dbe2428?w=500", caption: "Where it all began..." },
-                { url: "https://images.unsplash.com/photo-1516589174184-c68526514800?w=500", caption: "That summer in Bali" },
-                { url: "https://images.unsplash.com/photo-1529636760656-e09213d095bc?w=500", caption: "Late night coffee talks" },
-                { url: "https://images.unsplash.com/photo-1531747110447-caecaa9b2781?w=500", caption: "Your smile is everything" },
-                { url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500", caption: "To infinity and beyond" }
+                { url: "/assets/cherry_blossom_couple_1777519348819.png", caption: "Where it all began..." },
+                { url: "/assets/cozy_cafe_coffee_1777519366916.png", caption: "That summer in Bali" },
+                { url: "/assets/starlit_beach_dusk_1777519388445.png", caption: "Late night coffee talks" },
+                { url: "/assets/vintage_love_letter_1777519403542.png", caption: "Your smile is everything" },
+                { url: "/assets/lantern_night_sky_1777519421954.png", caption: "To infinity and beyond" }
             ]
         };
 
@@ -407,7 +780,7 @@
                         title: data.title,
                         subtitle: data.subtitle,
                         targetDate: data.target_date,
-                        message: data.message,
+                        wishes: data.wishes || [{ text: data.message, author: data.sender_name }],
                         sender: data.sender_name,
                         musicUrl: data.music_url || config.musicUrl,
                         photos: data.photos
@@ -421,12 +794,25 @@
             document.title = config.title;
             document.getElementById('hero-title').innerText = config.title;
             document.getElementById('hero-subtitle').innerText = config.subtitle;
-            document.getElementById('mainMessage').innerText = config.message;
-            document.getElementById('senderName').innerText = config.sender;
+
+            // Inject Wishes
+            const wishesGrid = document.getElementById('wishesGrid');
+            config.wishes.forEach(wish => {
+                const card = document.createElement('div');
+                card.className = 'message-box reveal active';
+                card.style.opacity = '1';
+                card.style.transform = 'scale(1)';
+                card.style.padding = '2rem';
+                card.innerHTML = `
+                    <p>"${wish.text}"</p>
+                    <div style="margin-top: 1.5rem; color: var(--gold); font-family: 'Playfair Display';">— ${wish.author}</div>
+                `;
+                wishesGrid.appendChild(card);
+            });
 
             // Inject Blobs
             const blobsContainer = document.getElementById('blobs');
-            for(let i=0; i<5; i++) {
+            for (let i = 0; i < 5; i++) {
                 const b = document.createElement('div');
                 b.className = 'blob';
                 b.style.width = Math.random() * 300 + 200 + 'px';
@@ -501,16 +887,16 @@
                     <img src="${photo.url}" alt="Memory">
                     <div class="caption">${photo.caption}</div>
                 `;
-                
+
                 card.addEventListener('click', () => {
                     card.style.transform = `translateX(400px) rotate(20deg) scale(0.5)`;
                     card.style.opacity = '0';
                     setTimeout(() => {
-                        stack.prepend(card);
+                        stack.appendChild(card); // Move to the bottom of the stack
                         card.style.transform = `rotate(${Math.random() * 10 - 5}deg)`;
                         card.style.opacity = '1';
-                        card.style.zIndex = 1;
-                        // update other z-indexes
+
+                        // Update z-indexes: first child is always on top
                         Array.from(stack.children).forEach((c, i) => {
                             c.style.zIndex = stack.children.length - i;
                         });
@@ -540,13 +926,52 @@
                 document.getElementById('mins').innerText = m.toString().padStart(2, '0');
                 document.getElementById('secs').innerText = s.toString().padStart(2, '0');
             }
-            setInterval(updateCountdown, 1000);
+            // Scratch Card Logic
+            const firstCard = stack.children[0];
+            const scratchContainer = document.createElement('div');
+            scratchContainer.className = 'scratch-container';
+            scratchContainer.innerHTML = '<canvas id="scratch-canvas"></canvas>';
+            firstCard.appendChild(scratchContainer);
+
+            const scratchCanvas = document.getElementById('scratch-canvas');
+            const scratchCtx = scratchCanvas.getContext('2d');
+            let isDrawing = false;
+
+            function initScratch() {
+                scratchCanvas.width = firstCard.offsetWidth;
+                scratchCanvas.height = firstCard.offsetHeight;
+                scratchCtx.fillStyle = '#bf953f'; // Gold color
+                scratchCtx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+                scratchCtx.font = '20px Arial';
+                scratchCtx.fillStyle = '#780000';
+                scratchCtx.textAlign = 'center';
+                scratchCtx.fillText('Scratch to Reveal', scratchCanvas.width/2, scratchCanvas.height/2);
+                scratchCtx.globalCompositeOperation = 'destination-out';
+            }
+
+            setTimeout(initScratch, 1000);
+
+            function scratch(e) {
+                if (!isDrawing) return;
+                const rect = scratchCanvas.getBoundingClientRect();
+                const x = (e.clientX || e.touches[0].clientX) - rect.left;
+                const y = (e.clientY || e.touches[0].clientY) - rect.top;
+                scratchCtx.beginPath();
+                scratchCtx.arc(x, y, 30, 0, Math.PI * 2);
+                scratchCtx.fill();
+            }
+
+            scratchCanvas.addEventListener('mousedown', () => isDrawing = true);
+            scratchCanvas.addEventListener('mousemove', scratch);
+            window.addEventListener('mouseup', () => isDrawing = false);
+            scratchCanvas.addEventListener('touchstart', (e) => { isDrawing = true; e.preventDefault(); });
+            scratchCanvas.addEventListener('touchmove', (e) => { scratch(e); e.preventDefault(); });
             updateCountdown();
 
             // Reveal Animation
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    if(entry.isIntersecting) entry.target.classList.add('active');
+                    if (entry.isIntersecting) entry.target.classList.add('active');
                 });
             }, { threshold: 0.1 });
 
@@ -556,7 +981,7 @@
             const audio = document.getElementById('bgMusic');
             const toggle = document.getElementById('musicToggle');
             const icon = document.getElementById('musicIcon');
-            
+
             toggle.addEventListener('click', () => {
                 if (audio.paused) {
                     audio.play();
@@ -574,7 +999,59 @@
                 cursor.style.top = e.clientY + 'px';
             });
 
-            // Loader
+            // Envelope Intro
+            window.openEnvelope = function() {
+                const env = document.getElementById('envelope');
+                const wrapper = document.getElementById('envelope-wrapper');
+                env.classList.add('open');
+                
+                setTimeout(() => {
+                    wrapper.style.opacity = '0';
+                    wrapper.style.pointerEvents = 'none';
+                    // Trigger music on first interaction
+                    document.getElementById('bg-music').play();
+                }, 1000);
+            }
+
+            // Timeline Injection
+            const timelineBox = document.getElementById('timeline-container');
+            config.timeline.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'timeline-item';
+                div.innerHTML = `
+                    <div class="timeline-content">
+                        <span style="color: var(--primary); font-size: 0.8rem; font-weight: 800;">${item.date}</span>
+                        <h3 style="margin: 0.5rem 0;">${item.title}</h3>
+                        <p style="font-size: 0.9rem; color: #94a3b8;">${item.text}</p>
+                    </div>
+                    <div class="timeline-dot"></div>
+                    <div style="width: 45%;"></div>
+                `;
+                timelineBox.appendChild(div);
+                
+                // Add to observer
+                observer.observe(div);
+            });
+            let candlesOut = 0;
+            window.blowCandle = function(el) {
+                if(el.classList.contains('out')) return;
+                el.classList.add('out');
+                candlesOut++;
+                
+                if(candlesOut === 3) {
+                    // Massive confetti
+                    confetti({
+                        particleCount: 150,
+                        spread: 70,
+                        origin: { y: 0.6 },
+                        colors: ['#ff4d6d', '#ffd700', '#ffffff']
+                    });
+                    
+                    const wishMsg = document.getElementById('wish-message');
+                    wishMsg.style.opacity = '1';
+                    wishMsg.style.transform = 'translateY(0)';
+                }
+            }
             setTimeout(() => {
                 document.getElementById('loader').style.opacity = '0';
                 setTimeout(() => {
@@ -593,4 +1070,5 @@
         });
     </script>
 </body>
+
 </html>
