@@ -30,9 +30,19 @@
         label { display: block; margin-bottom: 0.5rem; font-size: 0.8rem; font-weight: 600; color: #94a3b8; }
         input, textarea { width: 100%; padding: 1rem; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 12px; color: white; font-family: inherit; font-size: 1rem; }
 
-        .wish-entry { background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 16px; margin-bottom: 1rem; border: 1px solid var(--border); }
-        .magic-btn { background: none; border: none; cursor: pointer; font-size: 1.2rem; filter: grayscale(1); transition: 0.3s; }
-        .magic-btn:hover { filter: grayscale(0); transform: scale(1.2); }
+        .magic-btn { 
+            background: rgba(255, 77, 109, 0.1); 
+            border: 1px solid var(--border); 
+            cursor: pointer; 
+            font-size: 1.2rem; 
+            padding: 0.5rem; 
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s; 
+        }
+        .magic-btn:active { transform: scale(0.9); background: var(--primary); }
 
         .btn-action { width: 100%; padding: 1.2rem; background: var(--primary); color: white; border: none; border-radius: 16px; font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: 0.3s; margin-top: 1rem; }
         .btn-action:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(255, 77, 109, 0.3); }
@@ -142,42 +152,30 @@
 
             <div id="payQRContainer" style="background: white; padding: 2rem; border-radius: 24px; margin: 1.5rem 0;">
                 <div id="payQR" style="display: flex; justify-content: center; margin-bottom: 1rem;"></div>
-                <p id="priceText" style="color: #0f172a; font-weight: 800;">₹199 (Basic Page)</p>
+                <p id="priceText" style="color: #0f172a; font-weight: 800; margin-bottom: 1rem;">₹199 (Basic Page)</p>
+                <div style="background: #f1f5f9; padding: 0.8rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <code id="upiIdText" style="color: #475569; font-size: 0.9rem;">9588269825-2@ybl</code>
+                    <button onclick="copyUPI()" style="background: var(--primary); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.7rem; cursor: pointer;">Copy ID</button>
+                </div>
             </div>
 
-            <button onclick="triggerUPI()" class="btn-action">Pay Now via UPI</button>
+            <button id="upiBtn" onclick="triggerUPI()" class="btn-action">Pay Now via UPI</button>
+            <script>
+                // Hide the direct UPI button on desktop to avoid browser errors
+                if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                    document.getElementById('upiBtn').style.display = 'none';
+                }
+            </script>
             <p style="margin-top: 2rem; font-size: 0.8rem; color: #94a3b8;">Final Step: Send payment proof</p>
             <a href="#" id="waButton" class="btn-wa">Send Screenshot to WhatsApp</a>
         </div>
-    </div>
-
-    <script src="headings.js"></script>
-    <script>
+        <script src="headings.js"></script>
+    <script type="module">
+        // --- 1. GLOBAL STATE & CONFIG ---
         const UPI_ID = "9588269825-2@ybl";
         const PHONE = "919588269825";
-        
-        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-        const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const tier = urlParams.get('tier') || 'basic';
-        const photoLimit = tier === 'premium' ? 10 : 5;
-        const finalPrice = tier === 'premium' ? 299 : 199;
-
-        // Initialize Photos List
-        const photosList = document.getElementById('photosList');
-        document.getElementById('photoCountText').innerText = photoLimit;
-        for (let i = 1; i <= photoLimit; i++) {
-            const div = document.createElement('div');
-            div.className = "photo-input-container";
-            div.innerHTML = `
-                <label style="margin-bottom: 0; color: var(--primary); font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase;">Memory #${i}</label>
-                <input type="file" class="photo-file" accept="image/*">
-            `;
-            photosList.appendChild(div);
-        }
-
+        let usedHeadings = [];
+        let usedWishes = [];
         const magicWishes = [
             "Life is not measured by the number of breaths we take, but by the moments that take our breath away.",
             "Watching you grow into the brilliant, kind, and fearless person you are today is my greatest joy.",
@@ -189,24 +187,63 @@
             "25 years of you being the most annoying but also the most amazing person in my life. Love you!"
         ];
 
-        let usedHeadings = [];
-        let usedWishes = [];
+        // --- 2. SUPABASE INITIALIZATION (SAFE) ---
+        let supabaseClient = null;
+        function initSupabase() {
+            try {
+                // Vite replacement syntax
+                const url = import.meta.env.VITE_SUPABASE_URL;
+                const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+                if (url && key) supabaseClient = supabase.createClient(url, key);
+            } catch (e) {
+                console.warn("Supabase keys not ready via import.meta");
+            }
+        }
+        initSupabase();
 
+        // --- 3. UI GENERATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const tier = params.get('tier') || 'basic';
+            const limit = tier === 'premium' ? 10 : 5;
+            
+            const countText = document.getElementById('photoCountText');
+            if (countText) countText.innerText = limit;
+            
+            const photosList = document.getElementById('photosList');
+            if (photosList) {
+                photosList.innerHTML = '';
+                for (let i = 1; i <= limit; i++) {
+                    const div = document.createElement('div');
+                    div.className = "photo-input-container";
+                    div.innerHTML = `
+                        <label style="margin-bottom: 0; color: var(--primary); font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase;">Memory #${i}</label>
+                        <input type="file" class="photo-file" accept="image/*">
+                    `;
+                    photosList.appendChild(div);
+                }
+            }
+        });
+
+        // --- 4. CORE FUNCTIONS ---
         window.randomHeading = function() {
             const name = document.getElementById('name').value || "Someone Special";
-            
-            // headingTemplates is now coming from headings.js
+            if (typeof headingTemplates === 'undefined') return;
             let available = headingTemplates.filter(t => !usedHeadings.includes(t));
-            
-            if (available.length === 0) {
-                usedHeadings = [];
-                available = [...headingTemplates];
-            }
-
+            if (available.length === 0) { usedHeadings = []; available = [...headingTemplates]; }
             const template = available[Math.floor(Math.random() * available.length)];
             usedHeadings.push(template);
-            
             document.getElementById('title').value = template.replace("{name}", name);
+        }
+
+        window.randomWish = function(btn) {
+            const card = btn.closest('.wish-entry');
+            const textarea = card.querySelector('.w-text');
+            let available = magicWishes.filter(w => !usedWishes.includes(w));
+            if (available.length === 0) { usedWishes = []; available = [...magicWishes]; }
+            const wish = available[Math.floor(Math.random() * available.length)];
+            usedWishes.push(wish);
+            textarea.value = wish;
         }
 
         window.addMilestone = function() {
@@ -246,30 +283,15 @@
             list.appendChild(div);
         }
 
-        window.randomWish = function(btn) {
-            const card = btn.closest('.wish-entry');
-            const textarea = card.querySelector('.w-text');
-            
-            // Filter out used wishes
-            let available = magicWishes.filter(w => !usedWishes.includes(w));
-            
-            // Reset if all used
-            if (available.length === 0) {
-                usedWishes = [];
-                available = [...magicWishes];
-            }
-
-            const wish = available[Math.floor(Math.random() * available.length)];
-            usedWishes.push(wish);
-            textarea.value = wish;
-        }
-
         window.goToPayment = async function() {
+            if (!supabaseClient) {
+                alert("Database connection failed. Please check your .env configuration or internet.");
+                initSupabase();
+                return;
+            }
             const name = document.getElementById('name').value;
             const title = document.getElementById('title').value;
-            
-            if(!name) { alert("Please enter the Person's Name!"); return; }
-            if(!title) { alert("Please enter a Surprise Heading!"); return; }
+            if(!name || !title) { alert("Please fill in the Name and Heading!"); return; }
             
             const btn = document.querySelector('.btn-action');
             const originalText = btn.innerText;
@@ -277,91 +299,83 @@
             btn.disabled = true;
 
             try {
-                // 1. Collect Photo Files
                 const photoFiles = [];
-                document.querySelectorAll('.photo-file').forEach(input => {
-                    if (input.files[0]) photoFiles.push(input.files[0]);
-                });
+                document.querySelectorAll('.photo-file').forEach(input => { if (input.files[0]) photoFiles.push(input.files[0]); });
 
-                // 2. Upload to Supabase Storage
-                const photoUrls = [];
+                const uploadedUrls = [];
+                const orderId = 'ORD' + Math.random().toString(36).substr(2, 9).toUpperCase();
+
                 for (const file of photoFiles) {
                     const fileName = `${Date.now()}_${file.name}`;
-                    const { data, error } = await supabaseClient.storage
-                        .from('order-images')
-                        .upload(fileName, file);
-                    
+                    const { data, error } = await supabaseClient.storage.from('order-images').upload(fileName, file);
                     if (data) {
-                        const { data: { publicUrl } } = supabaseClient.storage
-                            .from('order-images')
-                            .getPublicUrl(fileName);
-                        photoUrls.push(publicUrl);
+                        const { data: { publicUrl } } = supabaseClient.storage.from('order-images').getPublicUrl(fileName);
+                        uploadedUrls.push(publicUrl);
                     }
                 }
 
-                // 3. Save Order Data to Supabase
-                const orderId = 'ORD' + Math.random().toString(36).substr(2, 9).toUpperCase();
-                
-                const wishes = [];
-                document.querySelectorAll('#wishesList .wish-entry').forEach(e => {
-                    const text = e.querySelector('.w-text').value;
-                    if(text) wishes.push({ text: text, author: e.querySelector('.w-author').value || "Dear" });
-                });
+                const wishes = Array.from(document.querySelectorAll('#wishesList .wish-entry')).map(card => ({
+                    text: card.querySelector('.w-text').value,
+                    author: card.querySelector('.w-author').value
+                }));
 
-                const timeline = [];
-                document.querySelectorAll('#milestonesList .wish-entry').forEach(e => {
-                    const t_title = e.querySelector('.m-title').value;
-                    if(t_title) {
-                        timeline.push({ 
-                            date: e.querySelector('.m-date').value, 
-                            title: t_title, 
-                            text: e.querySelector('.m-text').value 
-                        });
-                    }
-                });
+                const timeline = Array.from(document.querySelectorAll('#milestonesList .wish-entry')).map(card => ({
+                    date: card.querySelector('.m-date').value,
+                    title: card.querySelector('.m-title').value,
+                    text: card.querySelector('.m-text').value
+                }));
 
-                // (Note: Requires 'orders' table in Supabase)
-                await supabaseClient.from('orders').insert([{
+                const tier = new URLSearchParams(window.location.search).get('tier') || 'basic';
+                const { error: dbError } = await supabaseClient.from('orders').insert([{
                     order_id: orderId,
                     recipient_name: name,
                     heading: title,
                     tier: tier,
                     wishes: wishes,
                     timeline: timeline,
-                    photos: photoUrls,
-                    status: 'pending'
+                    photos: uploadedUrls,
+                    status: 'pending_payment'
                 }]);
 
-                // 4. Move to Step 2
+                const price = tier === 'premium' ? 299 : 199;
+                
                 document.getElementById('step1').style.display = 'none';
                 document.getElementById('step2').style.display = 'block';
+                document.getElementById('dot1').classList.remove('active');
                 document.getElementById('dot2').classList.add('active');
-                document.getElementById('priceText').innerText = `₹${finalPrice} (${tier === 'premium' ? 'Premium Forever' : 'Basic Page'})`;
+                document.getElementById('priceText').innerText = `₹${price} (${tier.toUpperCase()} Page)`;
 
-                // Generate QR
-                const upiUrl = `upi://pay?pa=${UPI_ID}&pn=CLICK_TURN&am=${finalPrice}&cu=INR&tn=${orderId}`;
-                const qrDiv = document.getElementById('payQR');
-                qrDiv.innerHTML = '';
-                
-                if (typeof QRCode !== 'undefined') {
-                    new QRCode(qrDiv, { text: upiUrl, width: 200, height: 200 });
-                    document.getElementById('payQRContainer').style.display = 'block';
-                }
-
-                // WhatsApp link
-                const waText = `Hi! I just placed an order (${orderId}) for the ${tier} surprise: "${title}". Here is my payment screenshot.`;
-                document.getElementById('waButton').href = `https://wa.me/${PHONE}?text=${waText}`;
+                const upiUrl = `upi://pay?pa=${UPI_ID}&pn=CLICK_TURN&am=${price}&tn=${orderId}&cu=INR`;
+                document.getElementById('payQR').innerHTML = '';
+                new QRCode(document.getElementById('payQR'), { text: upiUrl, width: 200, height: 200 });
+                document.getElementById('waButton').href = `https://wa.me/${PHONE}?text=Hi! I just paid ₹${price} for Order ID: ${orderId}. Here is the screenshot.`;
 
             } catch (err) {
                 console.error(err);
-                alert("Upload failed. Please try again or share images on WhatsApp.");
+                alert("Upload failed. Please try again.");
                 btn.innerText = originalText;
                 btn.disabled = false;
             }
         }
 
         window.triggerUPI = function() {
-            window.location.href = `upi://pay?pa=${UPI_ID}&pn=CLICK_TURN&am=${finalPrice}&cu=INR&tn=ClickTurn_Order`;
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            
+            if (!isMobile) {
+                alert("🔴 Payment Error: Your computer doesn't have a UPI app (like GPay). \n\nPLEASE SCAN THE QR CODE on the screen with your phone instead. It's the only way to pay from a computer!");
+                return; // Stop the code here so the browser doesn't try to launch anything
+            }
+
+            const tier = new URLSearchParams(window.location.search).get('tier') || 'basic';
+            const price = tier === 'premium' ? 299 : 199;
+            const upiUrl = `upi://pay?pa=${UPI_ID}&pn=CLICK_TURN&am=${price}&cu=INR&tn=Order`;
+            
+            window.location.href = upiUrl;
+        }
+
+        window.copyUPI = function() {
+            navigator.clipboard.writeText(UPI_ID);
+            alert("UPI ID Copied! You can now paste it in GPay or PhonePe.");
         }
     </script>
 </body>
