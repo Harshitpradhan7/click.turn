@@ -43,6 +43,33 @@
         .step-indicator { display: flex; justify-content: center; gap: 10px; margin-bottom: 2rem; }
         .dot { width: 40px; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
         .dot.active { background: var(--primary); }
+
+        .photo-input-container {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed var(--border);
+            padding: 1rem;
+            border-radius: 16px;
+            margin-bottom: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        input[type="file"] {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        input[type="file"]::file-selector-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -143,10 +170,10 @@
         document.getElementById('photoCountText').innerText = photoLimit;
         for (let i = 1; i <= photoLimit; i++) {
             const div = document.createElement('div');
-            div.style.marginBottom = "0.8rem";
+            div.className = "photo-input-container";
             div.innerHTML = `
-                <label style="font-size: 0.7rem; color: #64748b;">Photo #${i}</label>
-                <input type="file" class="photo-file" accept="image/*" style="padding: 0.5rem; font-size: 0.8rem;">
+                <label style="margin-bottom: 0; color: var(--primary); font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase;">Memory #${i}</label>
+                <input type="file" class="photo-file" accept="image/*">
             `;
             photosList.appendChild(div);
         }

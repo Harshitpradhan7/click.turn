@@ -748,11 +748,11 @@
                 { date: "May 2024", title: "Moving In", text: "Starting our little home full of dreams." }
             ],
             photos: [
-                { url: "/assets/cherry_blossom_couple_1777519348819.png", caption: "Where it all began..." },
-                { url: "/assets/cozy_cafe_coffee_1777519366916.png", caption: "That summer in Bali" },
-                { url: "/assets/starlit_beach_dusk_1777519388445.png", caption: "Late night coffee talks" },
-                { url: "/assets/vintage_love_letter_1777519403542.png", caption: "Your smile is everything" },
-                { url: "/assets/lantern_night_sky_1777519421954.png", caption: "To infinity and beyond" }
+                { url: "assets/cherry_blossom_couple_1777519348819.png", caption: "Where it all began..." },
+                { url: "assets/cozy_cafe_coffee_1777519366916.png", caption: "That summer in Bali" },
+                { url: "assets/starlit_beach_dusk_1777519388445.png", caption: "Late night coffee talks" },
+                { url: "assets/vintage_love_letter_1777519403542.png", caption: "Your smile is everything" },
+                { url: "assets/lantern_night_sky_1777519421954.png", caption: "To infinity and beyond" }
             ]
         };
 
@@ -949,7 +949,12 @@
                 scratchCtx.globalCompositeOperation = 'destination-out';
             }
 
-            setTimeout(initScratch, 1000);
+            const firstImg = firstCard.querySelector('img');
+            if (firstImg.complete) {
+                initScratch();
+            } else {
+                firstImg.onload = initScratch;
+            }
 
             function scratch(e) {
                 if (!isDrawing) return;
