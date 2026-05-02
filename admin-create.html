@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLICK.TURN | Creative Studio Admin</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="/libs/supabase.js"></script>
+    <script src="/libs/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -121,9 +121,14 @@
 
         <div id="status" class="status"></div>
         <div id="qrContainer">
-            <h3>QR Ready!</h3>
+            <h3>Surprise is Live! ✦</h3>
             <div id="qrcode"></div>
-            <button onclick="downloadQR()" style="background: #0b0f1a; color: white; padding: 0.5rem 1rem; border: none; border-radius: 8px; cursor: pointer;">Download QR</button>
+            <div style="background: rgba(0,0,0,0.05); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px dashed var(--border);">
+                <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase; font-weight: 800;">Customer Link</p>
+                <a id="generatedLink" href="#" target="_blank" style="color: var(--primary); font-weight: 700; font-size: 0.9rem; text-decoration: none; word-break: break-all;"></a>
+            </div>
+            <button onclick="downloadQR()" style="background: #0b0f1a; color: white; padding: 0.8rem 1.5rem; border: none; border-radius: 12px; font-weight: 600; cursor: pointer;">Download QR</button>
+            <button onclick="copyLink()" style="background: var(--primary); color: white; padding: 0.8rem 1.5rem; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; margin-left: 0.5rem;">Copy Link</button>
         </div>
     </div>
 
@@ -218,22 +223,102 @@
             try {
                 const { error } = await supabaseClient.from('occasions').insert([data]);
                 if (error) throw error;
-                const finalUrl = `${window.location.origin}/premium-occasion.html?id=${data.slug}`;
+                const finalUrl = `https://click-turn-mvp.vercel.app/premium-occasion.html?id=${data.slug}`;
                 status.innerText = '✦ Experience Live! ' + finalUrl;
                 status.className = 'status success';
                 generateQR(finalUrl);
             } catch (err) { status.innerText = 'Error: ' + err.message; status.className = 'status error'; }
         });
 
+        // Real-time Auto-fill from Order
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('orderId');
+
+            if (orderId) {
+                const status = document.getElementById('status');
+                status.style.display = 'block';
+                status.innerText = 'Loading customer data...';
+
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('orders')
+                        .select('*')
+                        .eq('order_id', orderId)
+                        .single();
+
+                    if (error) throw error;
+
+                    if (data) {
+                        // Pre-fill main info
+                        document.getElementById('title').value = `Happy Birthday, ${data.recipient_name}!`;
+                        document.getElementById('subtitle').value = `To the one who makes every day special. ✨`;
+                        document.getElementById('slug').value = data.recipient_name.toLowerCase().replace(/\s+/g, '-') + '-' + Math.floor(Math.random() * 900 + 100);
+                        if (data.target_date) document.getElementById('targetDate').value = data.target_date;
+
+                        // Clear default fields
+                        document.getElementById('wishesList').innerHTML = '';
+                        document.getElementById('photoList').innerHTML = '';
+
+                        // Fill Wishes
+                        if (data.wishes && data.wishes.length > 0) {
+                            data.wishes.forEach(wish => {
+                                const div = document.createElement('div');
+                                div.className = 'wish-entry';
+                                div.style = "margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; position: relative;";
+                                div.innerHTML = `
+                                    <textarea class="w-text" rows="2" placeholder="Message content..." required>${wish.text || wish}</textarea>
+                                    <input type="text" class="w-author" value="${wish.author || data.sender_name || 'Anonymous'}" placeholder="Author" style="margin-top: 0.5rem; width: 50%;">
+                                    <button type="button" class="btn-remove" style="position: absolute; right: 0; top: 0;" onclick="this.parentElement.remove()">×</button>
+                                `;
+                                document.getElementById('wishesList').appendChild(div);
+                            });
+                        }
+
+                        // Fill Photos
+                        if (data.photos && data.photos.length > 0) {
+                            data.photos.forEach((url, index) => {
+                                const div = document.createElement('div');
+                                div.className = 'entry';
+                                div.innerHTML = `
+                                    <input type="text" class="p-url" value="${url}" placeholder="Image URL" required>
+                                    <input type="text" class="p-caption" value="Memory #${index + 1}" placeholder="Caption">
+                                    <button type="button" class="btn-remove" onclick="this.parentElement.remove()">×</button>
+                                `;
+                                document.getElementById('photoList').appendChild(div);
+                            });
+                        }
+
+                        status.innerText = '✅ Customer data loaded successfully!';
+                        setTimeout(() => status.style.display = 'none', 3000);
+                    }
+                } catch (err) {
+                    status.innerText = 'Failed to load order: ' + err.message;
+                    status.className = 'status error';
+                }
+            }
+        });
+
         function generateQR(url) {
             const qrDiv = document.getElementById('qrcode'); qrDiv.innerHTML = '';
             new QRCode(qrDiv, { text: url, width: 220, height: 220 });
+            
+            const linkEl = document.getElementById('generatedLink');
+            linkEl.href = url;
+            linkEl.innerText = url;
+            
             document.getElementById('qrContainer').style.display = 'block';
         }
 
         window.downloadQR = function() {
             const img = document.querySelector('#qrcode img');
             const link = document.createElement('a'); link.download = 'qr.png'; link.href = img.src; link.click();
+        }
+
+        window.copyLink = function() {
+            const url = document.getElementById('generatedLink').href;
+            navigator.clipboard.writeText(url);
+            alert("Link copied to clipboard!");
         }
     </script>
 </body>

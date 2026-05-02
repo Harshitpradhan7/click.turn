@@ -729,23 +729,16 @@
     </footer>
 
     <script type="module">
-        // CONFIGURATION - Update these values for each customer
+        // --- 1. CONFIGURATION ---
         let config = {
             title: "Happy Birthday, Dear!",
             subtitle: "Celebrating 24 years of brilliance",
-            targetDate: "2026-05-31T00:00:00", // The big day!
-            message: "You are the melody to my song...", // fallback
+            targetDate: "2026-05-31T00:00:00",
+            message: "You are the melody to my song...",
             wishes: [
                 { text: "Watching you grow into the brilliant woman you are today has been the greatest privilege.", author: "Mom" },
                 { text: "25 years of you being the most amazing person in my life. Love you, always.", author: "Rohan" },
-                { text: "Every moment with you is a memory I treasure. Wishing you nothing but joy.", author: "Priya" }
-            ],
-            sender: "Rahul",
-            musicUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-            timeline: [
-                { date: "Oct 2022", title: "The First Hello", text: "In that small cafe where it all began." },
-                { date: "Jan 2023", title: "First Trip", text: "Exploring the mountains of Manali together." },
-                { date: "May 2024", title: "Moving In", text: "Starting our little home full of dreams." }
+                { text: "May your day be as bright as your smile and as beautiful as your heart.", author: "Bestie" }
             ],
             photos: [
                 { url: "/assets/cherry_blossom_couple_1777519348819.png", caption: "Where it all began..." },
@@ -753,325 +746,282 @@
                 { url: "/assets/starlit_beach_dusk_1777519388445.png", caption: "Late night coffee talks" },
                 { url: "/assets/vintage_love_letter_1777519403542.png", caption: "Your smile is everything" },
                 { url: "/assets/lantern_night_sky_1777519421954.png", caption: "To infinity and beyond" }
+            ],
+            timeline: [
+                { date: "Oct 2022", title: "The First Hello", text: "In that small cafe where it all began." },
+                { date: "Jan 2023", title: "First Trip", text: "Exploring the mountains of Manali together." },
+                { date: "May 2024", title: "Moving In", text: "Starting our little home full of dreams." }
             ]
         };
 
-        // Supabase Setup
-        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-        const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // --- 2. GLOBAL FUNCTIONS (DEFINED IMMEDIATELY) ---
+        window.openEnvelope = function() {
+            const env = document.getElementById('envelope');
+            const wrapper = document.getElementById('envelope-wrapper');
+            if (!env || !wrapper) return;
+            env.classList.add('open');
+            setTimeout(() => {
+                wrapper.style.opacity = '0';
+                wrapper.style.pointerEvents = 'none';
+                const music = document.getElementById('bgMusic');
+                if (music) music.play().catch(() => {});
+            }, 1000);
+        }
 
-        // Initialize Page
+        let candlesOut = 0;
+        window.blowCandle = function(el) {
+            if(el.classList.contains('out')) return;
+            el.classList.add('out');
+            candlesOut++;
+            if(candlesOut === 3) {
+                if (typeof confetti === 'function') {
+                    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#ff4d6d', '#ffd700', '#ffffff'] });
+                }
+                const wishMsg = document.getElementById('wish-message');
+                if (wishMsg) { wishMsg.style.opacity = '1'; wishMsg.style.transform = 'translateY(0)'; }
+            }
+        }
+
+        // --- 3. MAIN LOGIC ---
         document.addEventListener('DOMContentLoaded', async () => {
-            // Check for Dynamic ID
+            // Supabase Init
+            let supabaseClient = null;
+            try {
+                const url = import.meta.env.VITE_SUPABASE_URL;
+                const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+                if (url && key) supabaseClient = supabase.createClient(url, key);
+            } catch (e) { console.warn("Supabase Config Missing"); }
+
+            // Dynamic Data Fetch
             const urlParams = new URLSearchParams(window.location.search);
             const slugId = urlParams.get('id');
 
-            if (slugId) {
-                console.log('Fetching data for:', slugId);
-                const { data, error } = await supabaseClient
-                    .from('occasions')
-                    .select('*')
-                    .eq('slug', slugId)
-                    .single();
-
-                if (data && !error) {
-                    config = {
-                        title: data.title,
-                        subtitle: data.subtitle,
-                        targetDate: data.target_date,
-                        wishes: data.wishes || [{ text: data.message, author: data.sender_name }],
-                        sender: data.sender_name,
-                        musicUrl: data.music_url || config.musicUrl,
-                        photos: data.photos
-                    };
-                } else {
-                    console.error('Error fetching occasion:', error);
-                }
+            if (slugId && supabaseClient) {
+                try {
+                    const { data, error } = await supabaseClient.from('occasions').select('*').eq('slug', slugId).single();
+                    if (data && !error) {
+                        config.title = data.title;
+                        config.subtitle = data.subtitle;
+                        config.targetDate = data.target_date;
+                        config.wishes = data.wishes || [{ text: data.message, author: data.sender_name }];
+                        config.photos = (data.photos && data.photos.length > 0) ? data.photos : config.photos;
+                        config.timeline = (data.timeline && data.timeline.length > 0) ? data.timeline : config.timeline;
+                    }
+                } catch (err) { console.error("Fetch Error:", err); }
             }
 
-            // Apply Config
+            // Apply to UI
             document.title = config.title;
-            document.getElementById('hero-title').innerText = config.title;
-            document.getElementById('hero-subtitle').innerText = config.subtitle;
+            const hTitle = document.getElementById('hero-title');
+            const hSub = document.getElementById('hero-subtitle');
+            if (hTitle) hTitle.innerText = config.title;
+            if (hSub) hSub.innerText = config.subtitle;
 
-            // Inject Wishes
-            const wishesGrid = document.getElementById('wishesGrid');
-            config.wishes.forEach(wish => {
-                const card = document.createElement('div');
-                card.className = 'message-box reveal active';
-                card.style.opacity = '1';
-                card.style.transform = 'scale(1)';
-                card.style.padding = '2rem';
-                card.innerHTML = `
-                    <p>"${wish.text}"</p>
-                    <div style="margin-top: 1.5rem; color: var(--gold); font-family: 'Playfair Display';">— ${wish.author}</div>
-                `;
-                wishesGrid.appendChild(card);
-            });
-
-            // Inject Blobs
+            // Background Blobs
             const blobsContainer = document.getElementById('blobs');
-            for (let i = 0; i < 5; i++) {
-                const b = document.createElement('div');
-                b.className = 'blob';
-                b.style.width = Math.random() * 300 + 200 + 'px';
-                b.style.height = b.style.width;
-                b.style.left = Math.random() * 100 + '%';
-                b.style.top = Math.random() * 100 + '%';
-                b.style.animationDelay = Math.random() * 5 + 's';
-                blobsContainer.appendChild(b);
+            if (blobsContainer) {
+                for (let i = 0; i < 5; i++) {
+                    const b = document.createElement('div');
+                    b.className = 'blob';
+                    b.style.width = Math.random() * 300 + 200 + 'px';
+                    b.style.height = b.style.width;
+                    b.style.left = Math.random() * 100 + '%';
+                    b.style.top = Math.random() * 100 + '%';
+                    b.style.animationDelay = Math.random() * 5 + 's';
+                    blobsContainer.appendChild(b);
+                }
             }
 
-            // Confetti Cannon
+            // Custom Confetti Canvas
             const canvas = document.getElementById('confetti-canvas');
-            const ctx = canvas.getContext('2d');
-            let pieces = [];
-            const numberOfPieces = 50;
-            const colors = ['#ff4d6d', '#ffb3c1', '#ff758f', '#d4af37', '#ffffff'];
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let pieces = [];
+                const numberOfPieces = 50;
+                const colors = ['#ff4d6d', '#ffb3c1', '#ff758f', '#d4af37', '#ffffff'];
 
-            function updateCanvasSize() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
+                function updateCanvasSize() {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                }
+                window.addEventListener('resize', updateCanvasSize);
+                updateCanvasSize();
+
+                class Piece {
+                    constructor() { this.reset(); }
+                    reset() {
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height - canvas.height;
+                        this.rotation = Math.random() * 360;
+                        this.size = Math.random() * 10 + 5;
+                        this.color = colors[Math.floor(Math.random() * colors.length)];
+                        this.speed = Math.random() * 3 + 2;
+                    }
+                    update() {
+                        this.y += this.speed;
+                        this.rotation += this.speed;
+                        if (this.y > canvas.height) this.reset();
+                    }
+                    draw() {
+                        ctx.save();
+                        ctx.translate(this.x, this.y);
+                        ctx.rotate(this.rotation * Math.PI / 180);
+                        ctx.fillStyle = this.color;
+                        ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                        ctx.restore();
+                    }
+                }
+
+                for (let i = 0; i < numberOfPieces; i++) pieces.push(new Piece());
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    pieces.forEach(p => { p.update(); p.draw(); });
+                    requestAnimationFrame(animate);
+                }
+                animate();
             }
-            window.addEventListener('resize', updateCanvasSize);
-            updateCanvasSize();
-
-            class Piece {
-                constructor() {
-                    this.reset();
-                }
-                reset() {
-                    this.x = Math.random() * canvas.width;
-                    this.y = Math.random() * canvas.height - canvas.height;
-                    this.rotation = Math.random() * 360;
-                    this.size = Math.random() * 10 + 5;
-                    this.color = colors[Math.floor(Math.random() * colors.length)];
-                    this.speed = Math.random() * 3 + 2;
-                }
-                update() {
-                    this.y += this.speed;
-                    this.rotation += this.speed;
-                    if (this.y > canvas.height) this.reset();
-                }
-                draw() {
-                    ctx.save();
-                    ctx.translate(this.x, this.y);
-                    ctx.rotate(this.rotation * Math.PI / 180);
-                    ctx.fillStyle = this.color;
-                    ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
-                    ctx.restore();
-                }
-            }
-
-            for (let i = 0; i < numberOfPieces; i++) pieces.push(new Piece());
-
-            function animateConfetti() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                pieces.forEach(p => {
-                    p.update();
-                    p.draw();
-                });
-                requestAnimationFrame(animateConfetti);
-            }
-            animateConfetti();
-
-            // Photo Stack Logic
-            const stack = document.getElementById('photoStack');
-            config.photos.forEach((photo, index) => {
-                const card = document.createElement('div');
-                card.className = 'photo-card';
-                card.style.zIndex = config.photos.length - index;
-                card.style.transform = `rotate(${Math.random() * 10 - 5}deg) translate(${index * 2}px, ${index * 2}px)`;
-                card.innerHTML = `
-                    <img src="${photo.url}" alt="Memory">
-                    <div class="caption">${photo.caption}</div>
-                `;
-
-                card.addEventListener('click', () => {
-                    card.style.transform = `translateX(400px) rotate(20deg) scale(0.5)`;
-                    card.style.opacity = '0';
-                    setTimeout(() => {
-                        stack.appendChild(card); // Move to the bottom of the stack
-                        card.style.transform = `rotate(${Math.random() * 10 - 5}deg)`;
-                        card.style.opacity = '1';
-
-                        // Update z-indexes: first child is always on top
-                        Array.from(stack.children).forEach((c, i) => {
-                            c.style.zIndex = stack.children.length - i;
-                        });
-                    }, 500);
-                });
-                stack.appendChild(card);
-            });
 
             // Countdown Logic
             function updateCountdown() {
-                const now = new Date().getTime();
                 const target = new Date(config.targetDate).getTime();
+                const now = new Date().getTime();
                 const diff = target - now;
-
-                if (diff < 0) {
-                    document.getElementById('countdown').innerHTML = "The Day is Here! 🎉";
-                    return;
-                }
-
-                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const s = Math.floor((diff % (1000 * 60)) / 1000);
-
-                document.getElementById('days').innerText = d.toString().padStart(2, '0');
-                document.getElementById('hours').innerText = h.toString().padStart(2, '0');
-                document.getElementById('mins').innerText = m.toString().padStart(2, '0');
-                document.getElementById('secs').innerText = s.toString().padStart(2, '0');
+                if (diff <= 0) return;
+                const days = document.getElementById('days');
+                const hours = document.getElementById('hours');
+                const mins = document.getElementById('mins');
+                const secs = document.getElementById('secs');
+                if (days) days.innerText = Math.floor(diff / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+                if (hours) hours.innerText = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+                if (mins) mins.innerText = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+                if (secs) secs.innerText = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
             }
-            // Scratch Card Logic
-            const firstCard = stack.children[0];
-            const scratchContainer = document.createElement('div');
-            scratchContainer.className = 'scratch-container';
-            scratchContainer.innerHTML = '<canvas id="scratch-canvas"></canvas>';
-            firstCard.appendChild(scratchContainer);
-
-            const scratchCanvas = document.getElementById('scratch-canvas');
-            const scratchCtx = scratchCanvas.getContext('2d');
-            let isDrawing = false;
-
-            function initScratch() {
-                scratchCanvas.width = firstCard.offsetWidth;
-                scratchCanvas.height = firstCard.offsetHeight;
-                scratchCtx.fillStyle = '#bf953f'; // Gold color
-                scratchCtx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);
-                scratchCtx.font = '20px Arial';
-                scratchCtx.fillStyle = '#780000';
-                scratchCtx.textAlign = 'center';
-                scratchCtx.fillText('Scratch to Reveal', scratchCanvas.width/2, scratchCanvas.height/2);
-                scratchCtx.globalCompositeOperation = 'destination-out';
-            }
-
-            const firstImg = firstCard.querySelector('img');
-            if (firstImg.complete) {
-                initScratch();
-            } else {
-                firstImg.onload = initScratch;
-            }
-
-            function scratch(e) {
-                if (!isDrawing) return;
-                const rect = scratchCanvas.getBoundingClientRect();
-                const x = (e.clientX || e.touches[0].clientX) - rect.left;
-                const y = (e.clientY || e.touches[0].clientY) - rect.top;
-                scratchCtx.beginPath();
-                scratchCtx.arc(x, y, 30, 0, Math.PI * 2);
-                scratchCtx.fill();
-            }
-
-            scratchCanvas.addEventListener('mousedown', () => isDrawing = true);
-            scratchCanvas.addEventListener('mousemove', scratch);
-            window.addEventListener('mouseup', () => isDrawing = false);
-            scratchCanvas.addEventListener('touchstart', (e) => { isDrawing = true; e.preventDefault(); });
-            scratchCanvas.addEventListener('touchmove', (e) => { scratch(e); e.preventDefault(); });
+            setInterval(updateCountdown, 1000);
             updateCountdown();
 
-            // Reveal Animation
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) entry.target.classList.add('active');
+            // Photo Stack Logic
+            const stack = document.getElementById('photoStack');
+            if (stack) {
+                config.photos.forEach((photo, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'photo-card';
+                    card.style.zIndex = config.photos.length - index;
+                    card.style.transform = `rotate(${Math.random() * 10 - 5}deg) translate(${index * 2}px, ${index * 2}px)`;
+                    card.innerHTML = `<img src="${photo.url}" alt="Memory"><div class="caption">${photo.caption || ''}</div>`;
+                    
+                    card.onclick = () => {
+                        card.style.transform = `translateX(400px) rotate(20deg) scale(0.5)`;
+                        card.style.opacity = '0';
+                        setTimeout(() => {
+                            stack.appendChild(card);
+                            card.style.transform = `rotate(${Math.random() * 10 - 5}deg)`;
+                            card.style.opacity = '1';
+                            Array.from(stack.children).forEach((c, i) => c.style.zIndex = stack.children.length - i);
+                        }, 500);
+                    };
+                    stack.appendChild(card);
                 });
-            }, { threshold: 0.1 });
 
-            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+                // --- Scratch Card Logic ---
+                const firstCard = stack.children[0];
+                if (firstCard) {
+                    const scratchContainer = document.createElement('div');
+                    scratchContainer.className = 'scratch-container';
+                    scratchContainer.innerHTML = '<canvas id="scratch-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair;"></canvas>';
+                    firstCard.appendChild(scratchContainer);
 
-            // Music Logic
-            const audio = document.getElementById('bgMusic');
-            const toggle = document.getElementById('musicToggle');
-            const icon = document.getElementById('musicIcon');
+                    const sCanvas = document.getElementById('scratch-canvas');
+                    const sCtx = sCanvas.getContext('2d');
+                    let isDrawing = false;
 
-            toggle.addEventListener('click', () => {
-                if (audio.paused) {
-                    audio.play();
-                    icon.innerText = "🔊";
-                } else {
-                    audio.pause();
-                    icon.innerText = "🔇";
+                    function initScratch() {
+                        sCanvas.width = firstCard.offsetWidth;
+                        sCanvas.height = firstCard.offsetHeight;
+                        sCtx.fillStyle = '#bf953f';
+                        sCtx.fillRect(0, 0, sCanvas.width, sCanvas.height);
+                        sCtx.font = '24px Playfair Display';
+                        sCtx.fillStyle = '#780000';
+                        sCtx.textAlign = 'center';
+                        sCtx.fillText('Scratch to Reveal ✦', sCanvas.width/2, sCanvas.height/2);
+                        sCtx.globalCompositeOperation = 'destination-out';
+                    }
+
+                    const firstImg = firstCard.querySelector('img');
+                    if (firstImg.complete) initScratch(); else firstImg.onload = initScratch;
+
+                    function scratch(e) {
+                        if (!isDrawing) return;
+                        const rect = sCanvas.getBoundingClientRect();
+                        const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+                        const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+                        sCtx.beginPath();
+                        sCtx.arc(x, y, 35, 0, Math.PI * 2);
+                        sCtx.fill();
+                    }
+                    sCanvas.onmousedown = () => isDrawing = true;
+                    sCanvas.onmousemove = scratch;
+                    window.onmouseup = () => isDrawing = false;
+                    sCanvas.ontouchstart = (e) => { isDrawing = true; e.preventDefault(); };
+                    sCanvas.ontouchmove = (e) => { scratch(e); e.preventDefault(); };
                 }
-            });
+            }
 
-            // Cursor Logic
-            const cursor = document.getElementById('cursor');
-            document.addEventListener('mousemove', (e) => {
-                cursor.style.left = e.clientX + 'px';
-                cursor.style.top = e.clientY + 'px';
-            });
-
-            // Envelope Intro
-            window.openEnvelope = function() {
-                const env = document.getElementById('envelope');
-                const wrapper = document.getElementById('envelope-wrapper');
-                env.classList.add('open');
-                
-                setTimeout(() => {
-                    wrapper.style.opacity = '0';
-                    wrapper.style.pointerEvents = 'none';
-                    // Trigger music on first interaction
-                    document.getElementById('bg-music').play();
-                }, 1000);
+            // Inject Wishes
+            const wishesGrid = document.getElementById('wishesGrid');
+            if (wishesGrid) {
+                config.wishes.forEach(wish => {
+                    const card = document.createElement('div');
+                    card.className = 'message-box reveal';
+                    card.innerHTML = `<p>"${wish.text}"</p><div style="margin-top: 1.5rem; color: var(--gold); font-family: 'Playfair Display';">— ${wish.author}</div>`;
+                    wishesGrid.appendChild(card);
+                });
             }
 
             // Timeline Injection
-            const timelineBox = document.getElementById('timeline-container');
-            config.timeline.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'timeline-item';
-                div.innerHTML = `
-                    <div class="timeline-content">
-                        <span style="color: var(--primary); font-size: 0.8rem; font-weight: 800;">${item.date}</span>
-                        <h3 style="margin: 0.5rem 0;">${item.title}</h3>
-                        <p style="font-size: 0.9rem; color: #94a3b8;">${item.text}</p>
-                    </div>
-                    <div class="timeline-dot"></div>
-                    <div style="width: 45%;"></div>
-                `;
-                timelineBox.appendChild(div);
-                
-                // Add to observer
-                observer.observe(div);
-            });
-            let candlesOut = 0;
-            window.blowCandle = function(el) {
-                if(el.classList.contains('out')) return;
-                el.classList.add('out');
-                candlesOut++;
-                
-                if(candlesOut === 3) {
-                    // Massive confetti
-                    confetti({
-                        particleCount: 150,
-                        spread: 70,
-                        origin: { y: 0.6 },
-                        colors: ['#ff4d6d', '#ffd700', '#ffffff']
-                    });
-                    
-                    const wishMsg = document.getElementById('wish-message');
-                    wishMsg.style.opacity = '1';
-                    wishMsg.style.transform = 'translateY(0)';
-                }
+            const tBox = document.getElementById('timeline-container');
+            if (tBox) {
+                config.timeline.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'timeline-item reveal'; // Added 'reveal' here
+                    div.innerHTML = `<div class="timeline-content"><span style="color: var(--primary); font-size: 0.8rem; font-weight: 800;">${item.date}</span><h3 style="margin: 0.5rem 0;">${item.title}</h3><p style="font-size: 0.9rem; color: #94a3b8;">${item.text}</p></div><div class="timeline-dot"></div><div style="width: 45%;"></div>`;
+                    tBox.appendChild(div);
+                });
             }
+
+            // Observer for Reveal
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+            // Music Toggle
+            const audio = document.getElementById('bgMusic');
+            const toggle = document.getElementById('musicToggle');
+            const icon = document.getElementById('musicIcon');
+            if (toggle && audio && icon) {
+                toggle.onclick = () => {
+                    if (audio.paused) { audio.play(); icon.innerText = "🔊"; }
+                    else { audio.pause(); icon.innerText = "🔇"; }
+                };
+            }
+
+            // Cursor Tracking
+            const cursor = document.getElementById('cursor');
+            if (cursor) {
+                document.onmousemove = (e) => {
+                    cursor.style.left = e.clientX + 'px';
+                    cursor.style.top = e.clientY + 'px';
+                };
+            }
+
+            // Remove Loader
             setTimeout(() => {
-                document.getElementById('loader').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('loader').style.display = 'none';
-                    // Hero animations
-                    document.getElementById('hero-title').style.transition = '1s';
-                    document.getElementById('hero-title').style.opacity = '1';
-                    document.getElementById('hero-title').style.transform = 'translateY(0)';
-                    setTimeout(() => {
-                        document.getElementById('hero-subtitle').style.transition = '1s';
-                        document.getElementById('hero-subtitle').style.opacity = '1';
-                        document.getElementById('hero-subtitle').style.transform = 'translateY(0)';
-                    }, 300);
-                }, 1000);
-            }, 2000);
+                const loader = document.getElementById('loader');
+                if (loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.style.display = 'none', 1000);
+                }
+            }, 1000);
         });
     </script>
 </body>
