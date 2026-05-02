@@ -217,7 +217,8 @@
                 target_date: document.getElementById('targetDate').value,
                 wishes: wishes,
                 photos: photos,
-                timeline: timeline
+                timeline: timeline,
+                is_test: window.isOrderTest || false
             };
 
             try {
@@ -250,6 +251,7 @@
                     if (error) throw error;
 
                     if (data) {
+                        window.isOrderTest = data.is_test;
                         // Pre-fill main info
                         document.getElementById('title').value = `Happy Birthday, ${data.recipient_name}!`;
                         document.getElementById('subtitle').value = `To the one who makes every day special. ✨`;

@@ -330,7 +330,10 @@
                     text: card.querySelector('.m-text').value
                 }));
 
-                const tier = new URLSearchParams(window.location.search).get('tier') || 'basic';
+                const params = new URLSearchParams(window.location.search);
+                const tier = params.get('tier') || 'basic';
+                const isTest = params.get('test') === 'true';
+
                 const { error: dbError } = await supabaseClient.from('orders').insert([{
                     order_id: orderId,
                     recipient_name: name,
@@ -340,7 +343,8 @@
                     wishes: wishes,
                     timeline: timeline,
                     photos: uploadedUrls,
-                    status: 'pending_payment'
+                    status: 'pending_payment',
+                    is_test: isTest
                 }]);
 
                 const price = tier === 'premium' ? 299 : 199;
