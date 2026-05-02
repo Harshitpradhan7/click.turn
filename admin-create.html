@@ -73,6 +73,18 @@
                 </div>
             </div>
 
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label>Music URL (Direct MP3 Link)</label>
+                <div style="display: flex; gap: 10px; margin-bottom: 0.5rem;">
+                    <input type="text" id="musicUrl" placeholder="https://example.com/song.mp3" value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3">
+                </div>
+                <div style="display: flex; gap: 5px;">
+                    <button type="button" class="btn-add" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;" onclick="setMusic('bday')">🎂 Birthday</button>
+                    <button type="button" class="btn-add" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;" onclick="setMusic('romantic')">❤️ Romantic</button>
+                    <button type="button" class="btn-add" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;" onclick="setMusic('chill')">✨ Chill</button>
+                </div>
+            </div>
+
             <!-- WISHES SECTION -->
             <div class="section">
                 <label>Message Cards (Wishes)</label>
@@ -215,6 +227,7 @@
                 title: document.getElementById('title').value,
                 subtitle: document.getElementById('subtitle').value,
                 target_date: document.getElementById('targetDate').value,
+                music_url: document.getElementById('musicUrl').value,
                 wishes: wishes,
                 photos: photos,
                 timeline: timeline,
@@ -315,6 +328,16 @@
         window.downloadQR = function() {
             const img = document.querySelector('#qrcode img');
             const link = document.createElement('a'); link.download = 'qr.png'; link.href = img.src; link.click();
+        }
+
+        window.setMusic = function(vibe) {
+            const musicInput = document.getElementById('musicUrl');
+            const vibes = {
+                'bday': 'https://cdn.pixabay.com/audio/2022/11/02/audio_510b64f331.mp3', // Upbeat Birthday
+                'romantic': 'https://cdn.pixabay.com/audio/2022/05/27/audio_1808737487.mp3', // Soft Romantic
+                'chill': 'https://cdn.pixabay.com/audio/2022/03/15/audio_736657950c.mp3' // Lofi Chill
+            };
+            musicInput.value = vibes[vibe];
         }
 
         window.copyLink = function() {
